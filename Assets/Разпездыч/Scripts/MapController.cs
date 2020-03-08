@@ -3,13 +3,13 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
-using System.Linq;
 
 public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] private Sprite[] cardsImage;
     [SerializeField] private GameObject prefab;
     [SerializeField] private GameObject[] playersPlaces;
+    [SerializeField] private List<GameObject> cards;
     private List<PlayerControl> players = new List<PlayerControl>();
     public void AddPlayer(PlayerControl player)
     {
@@ -57,7 +57,16 @@ public class MapController : MonoBehaviour, IOnEventCallback
         {
             GameObject card = Instantiate(prefab, new Vector3(0, 0, 0), Quaternion.identity);
             card.GetComponent<SpriteRenderer>().sprite = cardsImage[nums[idx[i]]];
+            cards.Add(card);
             nums.RemoveAt(idx[i]);
+        }
+        int k = 0;
+        foreach (var player in players)
+        {
+            for (int i = 0; i < player.unAss; i++, k++)
+            {
+                #error here
+            }
         }
     }
     private void RemovePlayer()
@@ -110,15 +119,9 @@ class NameComparer : IComparer<PlayerControl>
     public int Compare(PlayerControl p1, PlayerControl p2)
     {
         if (p1.GetComponent<PhotonView>().OwnerActorNr > p2.GetComponent<PhotonView>().OwnerActorNr)
-        {
             return 1;
-        }
         else if (p1.GetComponent<PhotonView>().OwnerActorNr < p2.GetComponent<PhotonView>().OwnerActorNr)
-        {
             return -1;
-        }
         return 0;
     }
-
-
 }

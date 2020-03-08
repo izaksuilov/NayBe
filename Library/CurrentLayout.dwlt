@@ -100,7 +100,7 @@ MonoBehaviour:
   m_MinSize: {x: 334, y: 274}
   m_MaxSize: {x: 14004, y: 10024}
   vertical: 0
-  controlID: 94
+  controlID: 16
 --- !u!114 &5
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -192,7 +192,7 @@ MonoBehaviour:
   m_MinSize: {x: 683, y: 498}
   m_MaxSize: {x: 14004, y: 14048}
   vertical: 1
-  controlID: 80
+  controlID: 150
 --- !u!114 &9
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -218,7 +218,7 @@ MonoBehaviour:
   m_MinSize: {x: 683, y: 224}
   m_MaxSize: {x: 12008, y: 4024}
   vertical: 0
-  controlID: 81
+  controlID: 151
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -476,9 +476,9 @@ MonoBehaviour:
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: -4.368983, y: -0.64160216, z: 103.375}
+    m_Target: {x: 203.5539, y: 109.6979, z: 82.875}
     speed: 2
-    m_Value: {x: -4.368983, y: -0.64160216, z: 103.375}
+    m_Value: {x: 203.5539, y: 109.6979, z: 82.875}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -510,9 +510,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: 0, y: 0, z: 0, w: 1}
   m_Size:
-    m_Target: 638.1229
+    m_Target: 943.2563
     speed: 2
-    m_Value: 638.1229
+    m_Value: 943.2563
   m_Ortho:
     m_Target: 1
     speed: 2
@@ -959,7 +959,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 90f6ffffacf6ffffd0f8ffffd4f8ffffd8f8ffffdef8ffff54fbffff
+      m_ExpandedIDs: 6cdbfffff6dbffff48e1ffffcee3fffffce3ffff0cf7ffff28f7ffff48f9ffff50f9ffff58f9ffff62f9ffffb0fbffff7654000080540000a2600000ac600000b06000002661000058610000846100009e610000b0610000146200003662000054620000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -1021,20 +1021,20 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 1
     m_Folders:
-    - "Assets/\u0420\u0430\u0437\u043F\u0435\u0437\u0434\u044B\u0447/Scripts"
+    - Assets/Lobby
   m_ViewMode: 1
   m_StartGridSize: 96
   m_LastFolders:
-  - "Assets/\u0420\u0430\u0437\u043F\u0435\u0437\u0434\u044B\u0447/Scripts"
+  - Assets/Lobby
   m_LastFoldersGridSize: 96
   m_LastProjectPath: D:\Program Files\Unity Hub\Projects\NayBe
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 2}
-    m_SelectedIDs: f6290000
-    m_LastClickedID: 10742
-    m_ExpandedIDs: 0000000062280000f02900008e2b00005c2e0000e2330000e4330000e6330000e8330000ea330000
+    m_SelectedIDs: 9c0e0000
+    m_LastClickedID: 3740
+    m_ExpandedIDs: 00000000700b0000fe0c00009c0e00006e1100007c3300007e330000803300008233000084330000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1062,7 +1062,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 0000000062280000f02900008e2b00005c2e0000e2330000e4330000e6330000e8330000ea330000
+    m_ExpandedIDs: 00000000700b0000fe0c00009c0e00006e1100007c3300007e330000803300008233000084330000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1258,4 +1258,4 @@ MonoBehaviour:
   m_PersistentViewDataDictionary: {fileID: 0}
   m_LockTracker:
     m_IsLocked: 0
-  m_LastSelectedObjectID: 95292
+  m_LastSelectedObjectID: 21582

@@ -37,16 +37,11 @@ public class HubManager : MonoBehaviourPunCallbacks
         #region Network
         PhotonNetwork.NickName = "Player " + Random.Range(1, 100);
 		PhotonNetwork.AutomaticallySyncScene = true;
-		if (PhotonNetwork.IsConnected)
-			PhotonNetwork.JoinRandomRoom();
-		else
-		{
-			PhotonNetwork.ConnectUsingSettings();
-			PhotonNetwork.GameVersion = gameVersion;
-		}
+		PhotonNetwork.ConnectUsingSettings();
+		PhotonNetwork.GameVersion = gameVersion;
 		#endregion
 		ButtonsMenuActive(false);
-		// Setup data
+		#region Создаем разделы
 		_data.Add(
 			"Durak",
 			new Data()
@@ -74,7 +69,8 @@ public class HubManager : MonoBehaviourPunCallbacks
 				Scene = "Raz"
 			}
 		);
-		Select("Durak");
+		#endregion
+		SelectGame("Raz");
 	}
 	private void OnLevelWasLoaded()
 	{
@@ -84,7 +80,6 @@ public class HubManager : MonoBehaviourPunCallbacks
 	{
 		ButtonsMenuActive(true);
 	}
-
 	public void Create()
 	{
 		PhotonNetwork.CreateRoom(null, new RoomOptions {MaxPlayers = Convert.ToByte(MaxP.text)});
@@ -106,7 +101,7 @@ public class HubManager : MonoBehaviourPunCallbacks
 	{
 
 	}
-	public void Select(string Reference)
+	public void SelectGame(string Reference)
 	{
 		currentSelection = Reference;
 

@@ -8,13 +8,13 @@ public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] private Sprite[] cardsImage;
     [SerializeField] private GameObject prefab;
-    [SerializeField] private GameObject[] playersPlaces;
+    [SerializeField] private GameObject[] playersPositions;
     [SerializeField] private List<GameObject> cards;
-    private List<PlayerControl> players = new List<PlayerControl>();
+    private List<PlayerControl> players = new List<PlayerControl>(); 
     public void AddPlayer(PlayerControl player)
     {
         players.Add(player);
-        ArrageObjects();
+        ArrangePlayers();
         if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)
         {
             int[] data = CreateRandomIds();
@@ -22,8 +22,10 @@ public class MapController : MonoBehaviour, IOnEventCallback
             CreateCards(data);
         }
     }
-
-    private void ArrageObjects()
+    /// <summary>
+    /// Расстовляем игроков по местам
+    /// </summary>
+    private void ArrangePlayers()
     {
         players.Sort(new NameComparer());
         for (int i = 0; i < players.Count; i++)
@@ -44,35 +46,42 @@ public class MapController : MonoBehaviour, IOnEventCallback
       outer:
         for (int i = 0; i < players.Count; i++)
         {
-            players[i].transform.parent = playersPlaces[players.Count == 1 ? 0 : players.Count - 2].transform.GetChild(i).transform;
+            players[i].transform.parent = playersPositions[players.Count == 1 ? 0 : players.Count - 2].transform.GetChild(i).transform.GetChild(0).transform;
             players[i].transform.localPosition = new Vector3(0, 0, 0);
         }
     }
+    /// <summary>
+    /// Начать игру
+    /// </summary>
+    /// <param name="idx"></param>
     private void CreateCards(int[] idx)
     {
+        //создаются рандомные индексы для карт
         List<int> nums = new List<int>();
         for (int i = 0; i < cardsImage.Length; i++)
             nums.Add(i);
         for (int i = 0; i < cardsImage.Length; i++)
         {
             GameObject card = Instantiate(prefab, new Vector3(0, 0, 0), Quaternion.identity);
-            card.GetComponent<SpriteRenderer>().sprite = cardsImage[nums[idx[i]]];
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardsImage[nums[idx[i]]];
             cards.Add(card);
             nums.RemoveAt(idx[i]);
         }
         int k = 0;
         foreach (var player in players)
-        {
             for (int i = 0; i < player.unAss; i++, k++)
             {
-                #error here
+                var card = cards[k];
+                card.transform.parent = player.transform.parent.GetChild(1);
+                card.transform.localPosition = new Vector3(0, 0, 0);
+                //card.transform.rotation = Quaternion.AngleAxis(90, card.transform.localPosition);
             }
-        }
     }
     private void RemovePlayer()
     {
         players.RemoveAt(players.Count - 1);
         PhotonNetwork.RaiseEvent((byte)Events.RemoveCards, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+        ArrangePlayers();
     }
     private void EndGame()
     {

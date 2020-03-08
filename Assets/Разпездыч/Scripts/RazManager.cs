@@ -10,7 +10,6 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     
     public GameObject playerPref;
     private bool isAllInRoom = false;
-    // Start is called before the first frame update
     void Start()
     {
         PhotonNetwork.Instantiate(playerPref.name, new Vector3(0,0,0), Quaternion.identity);

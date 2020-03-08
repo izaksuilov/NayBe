@@ -25,20 +25,18 @@ public class MapController : MonoBehaviour, IOnEventCallback
 
     private void ArrageObjects()
     {
-        var selectedPlayers = (from t in players
-                               orderby t.GetComponent<PhotonView>().OwnerActorNr
-                               select t).ToArray();
-        for (int i = 0; i < selectedPlayers.Length; i++)
+        players.Sort(new NameComparer());
+        for (int i = 0; i < players.Count; i++)
         {
-            if (selectedPlayers[i].GetComponent<PhotonView>().IsMine)
+            if (players[i].GetComponent<PhotonView>().IsMine)
             {
                 for (int j = i; j > 0; j--)
                 {
-                    var first = selectedPlayers[0];
+                    var first = players[0];
                     int k;
-                    for (k = 0; k < selectedPlayers.Length - 1; k++)
-                        selectedPlayers[k] = selectedPlayers[k + 1];
-                    selectedPlayers[k] = first;
+                    for (k = 0; k < players.Count - 1; k++)
+                        players[k] = players[k + 1];
+                    players[k] = first;
                 }
                 goto outer;
             }
@@ -46,8 +44,8 @@ public class MapController : MonoBehaviour, IOnEventCallback
       outer:
         for (int i = 0; i < players.Count; i++)
         {
-            selectedPlayers[i].transform.parent = playersPlaces[players.Count == 1 ? 0 : players.Count - 2].transform.GetChild(i).transform;
-            selectedPlayers[i].transform.localPosition = new Vector3(0, 0, 0);
+            players[i].transform.parent = playersPlaces[players.Count == 1 ? 0 : players.Count - 2].transform.GetChild(i).transform;
+            players[i].transform.localPosition = new Vector3(0, 0, 0);
         }
     }
     private void CreateCards(int[] idx)
@@ -57,7 +55,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             nums.Add(i);
         for (int i = 0; i < cardsImage.Length; i++)
         {
-            GameObject card = Instantiate(prefab, new Vector3(i * 100, 0, 0), Quaternion.identity);
+            GameObject card = Instantiate(prefab, new Vector3(0, 0, 0), Quaternion.identity);
             card.GetComponent<SpriteRenderer>().sprite = cardsImage[nums[idx[i]]];
             nums.RemoveAt(idx[i]);
         }
@@ -106,4 +104,21 @@ public class MapController : MonoBehaviour, IOnEventCallback
         PhotonNetwork.RemoveCallbackTarget(this);
     }
     #endregion
+}
+class NameComparer : IComparer<PlayerControl>
+{
+    public int Compare(PlayerControl p1, PlayerControl p2)
+    {
+        if (p1.GetComponent<PhotonView>().OwnerActorNr > p2.GetComponent<PhotonView>().OwnerActorNr)
+        {
+            return 1;
+        }
+        else if (p1.GetComponent<PhotonView>().OwnerActorNr < p2.GetComponent<PhotonView>().OwnerActorNr)
+        {
+            return -1;
+        }
+        return 0;
+    }
+
+
 }

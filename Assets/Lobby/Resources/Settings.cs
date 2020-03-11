@@ -5,9 +5,6 @@ using UnityEngine;
 public enum Events : byte
 {
     CreateCards = 1,
-    RemoveCards,
-    RemovePlayer, 
-    AddPlayer
 }
 public static class Settings
 {

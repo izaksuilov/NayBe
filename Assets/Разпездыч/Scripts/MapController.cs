@@ -77,10 +77,10 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 //card.transform.rotation = Quaternion.AngleAxis(90, card.transform.localPosition);
             }
     }
-    private void RemovePlayer()
+    public void RemovePlayer()
     {
         players.RemoveAt(players.Count - 1);
-        PhotonNetwork.RaiseEvent((byte)Events.RemoveCards, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+        EndGame();
         ArrangePlayers();
     }
     private void EndGame()
@@ -105,12 +105,6 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 int[] data = (int[])photonEvent.CustomData;
                 CreateCards(data); break;
             }
-
-            case (byte)Events.RemoveCards:
-                EndGame(); break;
-
-            case (byte)Events.RemovePlayer:
-                RemovePlayer(); break;
         }
     }
     private void OnEnable()

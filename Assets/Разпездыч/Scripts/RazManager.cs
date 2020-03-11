@@ -7,9 +7,9 @@ using ExitGames.Client.Photon;
 //todo решить проблему, когда выходит и добавляется игрок 
 public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
 {
-    
     public GameObject playerPref;
     private bool isAllInRoom = false;
+    public MapController MapController; 
     void Start()
     {
         PhotonNetwork.Instantiate(playerPref.name, new Vector3(0,0,0), Quaternion.identity);
@@ -19,7 +19,7 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
         //В случае, если игрок закрыл приложение
         if (isAllInRoom && PhotonNetwork.CurrentRoom.PlayerCount != PhotonNetwork.CurrentRoom.MaxPlayers)
         {
-            PhotonNetwork.RaiseEvent((byte)Events.RemovePlayer, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+            MapController.RemovePlayer();
             isAllInRoom = false;
         }
 
@@ -37,7 +37,7 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     public void Leave()
     {
         isAllInRoom = false;
-        PhotonNetwork.RaiseEvent((byte)Events.RemovePlayer, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+        MapController.RemovePlayer();
         PhotonNetwork.LeaveRoom();
     }
 

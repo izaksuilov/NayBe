@@ -64,8 +64,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Lobby\Resources\ColorManager.cs" />
-    <Compile Include="Assets\Lobby\Resources\PlayerControl.cs" />
-    <Compile Include="Assets\Lobby\Resources\PLayerControlOffline.cs" />
+    <Compile Include="Assets\Lobby\Resources\Players\PlayerControl.cs" />
+    <Compile Include="Assets\Lobby\Resources\Players\PLayerControlOffline.cs" />
     <Compile Include="Assets\Lobby\Resources\Settings.cs" />
     <Compile Include="Assets\Lobby\Scripts\CameraScript.cs" />
     <Compile Include="Assets\Lobby\Scripts\HubManager.cs" />

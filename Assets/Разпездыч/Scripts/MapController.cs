@@ -44,12 +44,18 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
         }
     outer:
-        List<GameObject> PlayerPositions = FindChildWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2].transform, "PlayerPosition");
-        for (int i = players.Count-1; i >= 0 ; i--)
+        List<GameObject> PlayerPositions = FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "PlayerPosition");
+        for (int i = 0; i <players.Count ; i++)
         {
-            players[i].transform.parent = PlayerPositions[i].transform;
+            players[i].transform.parent = PlayerPositions[players.Count-1-i].transform;
             players[i].transform.localPosition = new Vector3(0, 0, 0);
         }
+        if (players.Count == 1)
+        {
+            players[0].transform.parent = PlayerPositions[1].transform;
+            players[0].transform.localPosition = new Vector3(0, 0, 0);
+        }
+            
     }
     /// <summary>
     /// Начать игру
@@ -69,20 +75,25 @@ public class MapController : MonoBehaviour, IOnEventCallback
             nums.RemoveAt(idx[i]);
         }
         int k = 0;
+        List<GameObject> UnAssPositions = FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
         foreach (var player in players)
+        {
             for (int i = 0; i < player.unAss; i++, k++)
             {
                 var card = cards[k];
-                card.transform.parent = player.transform.parent.GetChild(1);
+                card.transform.parent = UnAssPositions[k].transform;
                 card.transform.localPosition = new Vector3(0, 0, 0);
                 //card.transform.rotation = Quaternion.AngleAxis(90, card.transform.localPosition);
             }
+        }
+
     }
     public void RemovePlayer()
     {
         players.RemoveAt(players.Count - 1);
         EndGame();
-        ArrangePlayers();
+        if (players.Count > 0)
+            ArrangePlayers();
     }
     private void EndGame()
     {
@@ -96,10 +107,10 @@ public class MapController : MonoBehaviour, IOnEventCallback
             idx[i] = UnityEngine.Random.Range(0, cardsImage.Length-i);
         return idx;
     }
-    private List<GameObject> FindChildWithTag(Transform parent, string tag)
+    private List<GameObject> FindChildrenWithTag(GameObject parent, string tag)
     {
         List<GameObject> children = new List<GameObject>();
-        foreach (Transform child in parent)
+        foreach (Transform child in parent.GetComponentsInChildren<Transform>())
         {
             if (child.tag == tag)
                 children.Add(child.gameObject);

@@ -43,10 +43,11 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 goto outer;
             }
         }
-      outer:
-        for (int i = 0; i < players.Count; i++)
+    outer:
+        List<GameObject> PlayerPositions = FindChildWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2].transform, "PlayerPosition");
+        for (int i = players.Count-1; i >= 0 ; i--)
         {
-            players[i].transform.parent = playersPositions[players.Count == 1 ? 0 : players.Count - 2].transform.GetChild(i).transform.GetChild(0).transform;
+            players[i].transform.parent = PlayerPositions[i].transform;
             players[i].transform.localPosition = new Vector3(0, 0, 0);
         }
     }
@@ -94,6 +95,16 @@ public class MapController : MonoBehaviour, IOnEventCallback
         for (int i = 0; i < cardsImage.Length; i++)
             idx[i] = UnityEngine.Random.Range(0, cardsImage.Length-i);
         return idx;
+    }
+    private List<GameObject> FindChildWithTag(Transform parent, string tag)
+    {
+        List<GameObject> children = new List<GameObject>();
+        foreach (Transform child in parent)
+        {
+            if (child.tag == tag)
+                children.Add(child.gameObject);
+        }
+        return children;
     }
     #region События 
     public void OnEvent(EventData photonEvent)

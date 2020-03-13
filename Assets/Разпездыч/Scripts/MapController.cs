@@ -6,31 +6,36 @@ using ExitGames.Client.Photon;
 
 public class MapController : MonoBehaviour, IOnEventCallback
 {
-    [SerializeField] private Sprite[] cardsImage;
-    [SerializeField] private GameObject prefab;
-    [SerializeField] private GameObject[] playersPositions;
+    [SerializeField] private Sprite[] cardsImage;//лицевые стороны карт
+    [SerializeField] private GameObject prefab;//префаб карты
+    [SerializeField] private GameObject[] playersPositions;//позиции, на которых распложены игроки и карты
     [SerializeField] private List<GameObject> cards;
-    private List<PlayerControl> players = new List<PlayerControl>(); 
+    private List<PlayerControl> players = new List<PlayerControl>();
+    /// <summary>
+    /// Добавить игрока в массив игроков
+    /// </summary>
+    /// <param name="player">Текущий Игрок</param>
     public void AddPlayer(PlayerControl player)
     {
-        players.Add(player);
+        players.Add(player);//когда добавляется игрок, нужно переместить всех игроков в зависимости от их количества
         ArrangePlayers();
+        //если комната полная
         if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)
         {
-            int[] data = CreateRandomIds();
-            PhotonNetwork.RaiseEvent((byte)Events.CreateCards, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
-            CreateCards(data);
+            int[] data = CreateRandomIds();//генерируем рандомные числа, отвечающие за лицевые стороны карт
+            PhotonNetwork.RaiseEvent((byte)Events.StartGame, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+            StartGame(data);//отправляем событие и начинаем игру
         }
     }
     /// <summary>
-    /// Расстовляем игроков по местам
+    /// Расставить игроков по местам
     /// </summary>
     private void ArrangePlayers()
     {
-        players.Sort(new NameComparer());
+        players.Sort(new PlayerComparer());//сортируем игроков, в порядке очереди
         for (int i = 0; i < players.Count; i++)
         {
-            if (players[i].GetComponent<PhotonView>().IsMine)
+            if (players[i].GetComponent<PhotonView>().IsMine)//ставим нашего игрока первым в массиве
             {
                 for (int j = i; j > 0; j--)
                 {
@@ -43,11 +48,13 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 goto outer;
             }
         }
-    outer:
-        List<GameObject> PlayerPositions = FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "PlayerPosition");
-        for (int i = 0; i <players.Count ; i++)
+     outer:
+        //расставляем игроков по часовой стрелке
+        List<GameObject> PlayerPositions = 
+            FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "PlayerPosition");
+        for (int i = 0; i < players.Count; i++)
         {
-            players[i].transform.parent = PlayerPositions[players.Count-1-i].transform;
+            players[i].transform.parent = PlayerPositions[players.Count - 1 - i].transform;
             players[i].transform.localPosition = new Vector3(0, 0, 0);
         }
         if (players.Count == 1)
@@ -55,27 +62,25 @@ public class MapController : MonoBehaviour, IOnEventCallback
             players[0].transform.parent = PlayerPositions[1].transform;
             players[0].transform.localPosition = new Vector3(0, 0, 0);
         }
-            
+
     }
     /// <summary>
     /// Начать игру
     /// </summary>
-    /// <param name="idx"></param>
-    private void CreateCards(int[] idx)
+    /// <param name="idx">Массив индексов для карт</param>
+    private void StartGame(int[] idx)
     {
-        //создаются рандомные индексы для карт
-        List<int> nums = new List<int>();
-        for (int i = 0; i < cardsImage.Length; i++)
-            nums.Add(i);
+        //создать нужное количество карт
         for (int i = 0; i < cardsImage.Length; i++)
         {
             GameObject card = Instantiate(prefab, new Vector3(0, 0, 0), Quaternion.identity);
-            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardsImage[nums[idx[i]]];
+            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardsImage[idx[i]];
             cards.Add(card);
-            nums.RemoveAt(idx[i]);
         }
+        //положить каждому игроку соответствующее количество поджопников
         int k = 0;
-        List<GameObject> UnAssPositions = FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
+        List<GameObject> UnAssPositions = 
+            FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
         foreach (var player in players)
         {
             for (int i = 0; i < player.unAss; i++, k++)
@@ -88,6 +93,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
         }
 
     }
+    /// <summary>
+    /// Убрать игрока из массива игроков
+    /// </summary>
     public void RemovePlayer()
     {
         players.RemoveAt(players.Count - 1);
@@ -95,18 +103,48 @@ public class MapController : MonoBehaviour, IOnEventCallback
         if (players.Count > 0)
             ArrangePlayers();
     }
+    /// <summary>
+    /// Закончить игру
+    /// </summary>
     private void EndGame()
     {
+        //удаляем все карты
         foreach (GameObject item in GameObject.FindGameObjectsWithTag("Card"))
             Destroy(item);
     }
+    /// <summary>
+    /// Создать псевдорандомные индексы для карт
+    /// </summary>
     private int[] CreateRandomIds()
     {
+        //создаем псевдорандомный массив неповторяющихся чисел
         int[] idx = new int[cardsImage.Length];
         for (int i = 0; i < cardsImage.Length; i++)
-            idx[i] = UnityEngine.Random.Range(0, cardsImage.Length-i);
+        {
+            int id; bool loop = true;
+            while(loop)
+            {
+                id = UnityEngine.Random.Range(0, cardsImage.Length);
+                for (int k = 0; idx[k] != null; k++)
+                {
+                    if (idx[k] == id)
+                    {
+                        loop = true;
+                        break;
+                    }
+                    loop = false;
+                }
+            }
+            idx[i] = id;
+        }
         return idx;
     }
+    /// <summary>
+    /// Искать объект-ребенок в объекте-родителе по тегу
+    /// </summary>
+    /// <param name="parent">Объект, в котором нужно искать</param>
+    /// <param name="tag">Тег объекта-ребенка</param>
+    /// <returns>Возвращает List объектов-детей</returns>
     private List<GameObject> FindChildrenWithTag(GameObject parent, string tag)
     {
         List<GameObject> children = new List<GameObject>();
@@ -122,10 +160,11 @@ public class MapController : MonoBehaviour, IOnEventCallback
     {
         switch (photonEvent.Code)
         {
-            case (byte)Events.CreateCards:
+        #warning Изменить в Settings
+            case (byte)Events.StartGame:
             {
                 int[] data = (int[])photonEvent.CustomData;
-                CreateCards(data); break;
+                StartGame(data); break;
             }
         }
     }
@@ -139,7 +178,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     }
     #endregion
 }
-class NameComparer : IComparer<PlayerControl>
+class PlayerComparer : IComparer<PlayerControl>
 {
     public int Compare(PlayerControl p1, PlayerControl p2)
     {

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public enum Events : byte
 {
-    CreateCards = 1,
+    StartGame = 1,
 }
 public static class Settings
 {

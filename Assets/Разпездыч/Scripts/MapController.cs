@@ -117,25 +117,16 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// </summary>
     private int[] CreateRandomIds()
     {
+        List<int> list = new List<int>();
         //создаем псевдорандомный массив неповторяющихся чисел
         int[] idx = new int[cardsImage.Length];
         for (int i = 0; i < cardsImage.Length; i++)
+            list.Add(i);
+        for (int i = 0; i < cardsImage.Length; i++)
         {
-            int id; bool loop = true;
-            while(loop)
-            {
-                id = UnityEngine.Random.Range(0, cardsImage.Length);
-                for (int k = 0; idx[k] != null; k++)
-                {
-                    if (idx[k] == id)
-                    {
-                        loop = true;
-                        break;
-                    }
-                    loop = false;
-                }
-            }
-            idx[i] = id;
+            int randomId = UnityEngine.Random.Range(0, list.Count);
+            idx[i] = list[randomId];
+            list.RemoveAt(randomId);
         }
         return idx;
     }
@@ -160,7 +151,6 @@ public class MapController : MonoBehaviour, IOnEventCallback
     {
         switch (photonEvent.Code)
         {
-        #warning Изменить в Settings
             case (byte)Events.StartGame:
             {
                 int[] data = (int[])photonEvent.CustomData;

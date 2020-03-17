@@ -5,6 +5,7 @@ using UnityEngine;
 public enum Events : byte
 {
     StartGame = 1,
+    EndGame
 }
 public static class Settings
 {

@@ -1,4 +1,5 @@
 ﻿using Photon.Pun;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerControl : MonoBehaviour, IPunObservable
@@ -6,6 +7,9 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     private PhotonView photonView;
     private SpriteRenderer spriteRenderer;
     public int unAss { get; private set; } =  1;
+    public List<GameObject> cards { get; set; }
+    public List<GameObject> unAssCards { get; set; }
+    public bool isPlayerTurn { get; set; } =  false;
 
     private bool isRed;
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)

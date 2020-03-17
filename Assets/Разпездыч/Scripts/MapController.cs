@@ -88,6 +88,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 var card = cards[k];
                 card.transform.parent = UnAssPositions[k].transform;
                 card.transform.localPosition = new Vector3(0, 0, 0);
+                player.unAssCards.Add(card);
                 //card.transform.rotation = Quaternion.AngleAxis(90, card.transform.localPosition);
             }
         }

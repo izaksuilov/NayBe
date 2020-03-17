@@ -32,7 +32,6 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     public override void OnLeftRoom()
     {
         SceneManager.LoadScene(0);
-        Debug.Log($"Left");
     }
     public void Leave()
     {

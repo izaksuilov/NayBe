@@ -8,7 +8,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     private SpriteRenderer spriteRenderer;
     public int unAss { get; private set; } =  1;
     public List<GameObject> cards { get; set; }
-    public List<GameObject> unAssCards { get; set; }
+    public List<GameObject> unAssCards = new List<GameObject>();
     public bool isPlayerTurn { get; set; } =  false;
 
     private bool isRed;

@@ -3,13 +3,14 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
+using UnityEngine.UI;
 
 public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] private Sprite[] cardsImage;//лицевые стороны карт
     [SerializeField] private GameObject prefab;//префаб карты
     [SerializeField] private GameObject[] playersPositions;//позиции, на которых распложены игроки и карты
-    [SerializeField] private List<GameObject> cards;
+    private List<GameObject> cards = new List<GameObject>();
     private List<PlayerControl> players = new List<PlayerControl>();
     /// <summary>
     /// Добавить игрока в массив игроков
@@ -74,7 +75,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         for (int i = 0; i < cardsImage.Length; i++)
         {
             GameObject card = Instantiate(prefab, new Vector3(0, 0, 0), Quaternion.identity);
-            card.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = cardsImage[idx[i]];
+            card.transform.GetChild(0).GetChild(0).GetComponent<Image>().sprite = cardsImage[idx[i]];
             cards.Add(card);
         }
         //положить каждому игроку соответствующее количество поджопников
@@ -86,7 +87,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             for (int i = 0; i < player.unAss; i++, k++)
             {
                 var card = cards[k];
-                card.transform.parent = UnAssPositions[k].transform;
+                card.transform.SetParent(UnAssPositions[k].transform);
                 card.transform.localPosition = new Vector3(0, 0, 0);
                 player.unAssCards.Add(card);
                 //card.transform.rotation = Quaternion.AngleAxis(90, card.transform.localPosition);

@@ -1,0 +1,126 @@
+﻿using Photon.Pun;
+using Photon.Realtime;
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using Random = UnityEngine.Random;
+
+public class HubManager : MonoBehaviourPunCallbacks
+{
+	string gameVersion = "1";
+	[SerializeField] private Button CreateButton;
+	[SerializeField] private Button JoinButton;
+	[SerializeField] private Text TitleText;
+	[SerializeField] private GameObject TopPanel;
+	[SerializeField] private Text DescriptionText;
+	[SerializeField] private GameObject CreateRoomButton;
+	[SerializeField] private GameObject JoinRoomButton;
+	[SerializeField] private GameObject DurakPanel;
+	[SerializeField] private GameObject RazPanel;
+	[SerializeField] private Text MaxP;
+	struct Data
+	{
+		public string Title;
+		public string Description;
+		public string Scene;
+	}
+
+	Dictionary<string, Data> _data = new Dictionary<string, Data>();
+
+	string currentSelection;
+
+	// Use this for initialization
+	void Awake()
+	{
+        #region Network
+        PhotonNetwork.NickName = "Player " + Random.Range(1, 100);
+		PhotonNetwork.AutomaticallySyncScene = true;
+		PhotonNetwork.ConnectUsingSettings();
+		PhotonNetwork.GameVersion = gameVersion;
+		#endregion
+		ButtonsMenuActive(false);
+		#region Создаем разделы
+		_data.Add(
+			"Durak",
+			new Data()
+			{
+				Title = "Дурак",
+				Description = "Мне нужно будет поменять дизайн игры и сделать его ориентированным на телефоны",
+				Scene = "Durak"
+			}
+		);
+		_data.Add(
+			"Naybe",
+			new Data()
+			{
+				Title = "Подтетерь соседа",
+				Description = "Но я пока еще не придумал, как лучше сделать",
+				Scene = "Naybe"
+			}
+		);
+		_data.Add(
+			"Raz",
+			new Data()
+			{
+				Title = "Бездельник",
+				Description = "Тут должно быть описание игры",
+				Scene = "Raz"
+			}
+		);
+		#endregion
+		SelectGame("Raz");
+	}
+	private void OnLevelWasLoaded()
+	{
+		ButtonsMenuActive(false);
+	}
+	public override void OnConnectedToMaster()
+	{
+		ButtonsMenuActive(true);
+	}
+	public void Create()
+	{
+		PhotonNetwork.CreateRoom(null, new RoomOptions {MaxPlayers = Convert.ToByte(MaxP.text)});
+	}
+	public void Join()
+	{
+		PhotonNetwork.JoinRandomRoom();
+	}
+	public override void OnJoinedRoom()
+	{
+		if (!string.IsNullOrEmpty(currentSelection))
+			SceneManager.LoadScene(_data[currentSelection].Scene);
+	}
+	public override void OnJoinRandomFailed(short returnCode, string message)
+	{
+		
+	}
+	public override void OnDisconnected(DisconnectCause cause)
+	{
+
+	}
+	public void SelectGame(string Reference)
+	{
+		currentSelection = Reference;
+
+		TitleText.text = _data[currentSelection].Title;
+		DescriptionText.text = _data[currentSelection].Description;
+
+		TopPanel.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
+		CreateRoomButton.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
+		JoinRoomButton.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
+
+		DurakPanel.SetActive(false); RazPanel.SetActive(false);
+		if (currentSelection.Equals("Durak"))
+			DurakPanel.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
+		else if (currentSelection.Equals("Raz"))
+			RazPanel.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
+	}
+	public void ButtonsMenuActive(bool interactable)
+	{
+		CreateButton.interactable = interactable;
+		JoinButton.interactable = interactable;
+	}
+}

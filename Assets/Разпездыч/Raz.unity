@@ -198,7 +198,6 @@ MonoBehaviour:
   playersPositions:
   - {fileID: 890263255}
   - {fileID: 1700324764}
-  cards: []
 --- !u!4 &41914670
 Transform:
   m_ObjectHideFlags: 0
@@ -959,7 +958,7 @@ PrefabInstance:
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 329
       objectReference: {fileID: 0}
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
@@ -969,7 +968,7 @@ PrefabInstance:
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 658
       objectReference: {fileID: 0}
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
@@ -1195,7 +1194,7 @@ PrefabInstance:
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 164.5
       objectReference: {fileID: 0}
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
@@ -1205,7 +1204,7 @@ PrefabInstance:
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 329
       objectReference: {fileID: 0}
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
@@ -1953,7 +1952,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87402c5ebd687db4eb5c6621208cc1c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  camera: {fileID: 520144643}
 --- !u!224 &1756319911
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2072,7 +2070,7 @@ PrefabInstance:
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 0
+      value: 164.5
       objectReference: {fileID: 0}
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
@@ -2082,7 +2080,7 @@ PrefabInstance:
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 0
+      value: 329
       objectReference: {fileID: 0}
     - target: {fileID: 3838063706499891329, guid: 2cd3ac88a4c5d064fa5a692154a3d241,
         type: 3}

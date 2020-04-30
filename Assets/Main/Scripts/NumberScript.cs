@@ -4,7 +4,6 @@ using UnityEngine;
 public class NumberScript : MonoBehaviour
 {
     [SerializeField] private Slider slider;
-    [SerializeField] private Text myText;
     // Start is called before the first frame update
     private void Start()
     {
@@ -12,6 +11,6 @@ public class NumberScript : MonoBehaviour
     }
     public void ChangeNum()
     {
-        myText.text = slider.value.ToString();
+        this.GetComponent<Text>().text = slider.value.ToString();
     }
 }

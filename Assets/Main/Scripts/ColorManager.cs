@@ -9,12 +9,12 @@ public class ColorManager : MonoBehaviour
     public Image[] additionalObjects2;
     public Text[] textColorObjects;
     public Text[] textOnBgColorObjects;
-    private Color32[] bgColor = { new Color32(255, 255, 255, 255) };
-    private Color32[] activeColor = { new Color32(43, 17, 90, 255) };
-    private Color32[] additionalColor1 = { new Color32(118, 99, 154, 255) };
-    private Color32[] additionalColor2 = { new Color32(246, 237, 255, 255) };
-    private Color32[] textColor = { new Color32(246, 237, 255, 255) };
-    private Color32[] textOnBgColor = { new Color32(31, 17, 52, 255) };
+    public static Color32[] bgColor = { new Color32(255, 255, 255, 255) };
+    public static Color32[] activeColor = { new Color32(43, 17, 90, 255) };
+    public static Color32[] additionalColor1 = { new Color32(118, 99, 154, 255) };
+    public static Color32[] additionalColor2 = { new Color32(246, 237, 255, 255) };
+    public static Color32[] textColor = { new Color32(246, 237, 255, 255) };
+    public static Color32[] textOnBgColor = { new Color32(31, 17, 52, 255) };
     private void Start()
     {
         SetColor();

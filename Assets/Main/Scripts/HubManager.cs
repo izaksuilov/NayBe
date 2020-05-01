@@ -13,12 +13,9 @@ public class HubManager : MonoBehaviourPunCallbacks
 	[SerializeField] private Button CreateButton;
 	[SerializeField] private Button JoinButton;
 	[SerializeField] private Text TitleText;
-	[SerializeField] private GameObject TopPanel;
 	[SerializeField] private Text DescriptionText;
-	[SerializeField] private GameObject CreateRoomButton;
-	[SerializeField] private GameObject JoinRoomButton;
-	[SerializeField] private GameObject DurakPanel;
-	[SerializeField] private GameObject RazPanel;
+	[SerializeField] private GameObject RazSettings;
+	[SerializeField] private GameObject DurakSettings;
 	[SerializeField] private Text MaxP;
 	struct Data
 	{
@@ -43,6 +40,15 @@ public class HubManager : MonoBehaviourPunCallbacks
 		ButtonsMenuActive(false);
 		#region Создаем разделы
 		_data.Add(
+			"Raz",
+			new Data()
+			{
+				Title = "Бездельник",
+				Description = "Тут должно быть описание игры",
+				Scene = "Raz"
+			}
+		);
+		_data.Add(
 			"Durak",
 			new Data()
 			{
@@ -52,23 +58,15 @@ public class HubManager : MonoBehaviourPunCallbacks
 			}
 		);
 		_data.Add(
-			"Naybe",
+			"NayBe",
 			new Data()
 			{
 				Title = "Подтетерь соседа",
 				Description = "Но я пока еще не придумал, как лучше сделать",
-				Scene = "Naybe"
+				Scene = "NayBe"
 			}
 		);
-		_data.Add(
-			"Raz",
-			new Data()
-			{
-				Title = "Бездельник",
-				Description = "Тут должно быть описание игры",
-				Scene = "Raz"
-			}
-		);
+
 		#endregion
 		SelectGame("Raz");
 	}
@@ -101,22 +99,18 @@ public class HubManager : MonoBehaviourPunCallbacks
 	{
 
 	}
-	public void SelectGame(string Reference)
+	public void SelectGame(string Game)
 	{
-		currentSelection = Reference;
+		currentSelection = Game;
 
 		TitleText.text = _data[currentSelection].Title;
 		DescriptionText.text = _data[currentSelection].Description;
 
-		TopPanel.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
-		CreateRoomButton.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
-		JoinRoomButton.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
-
-		DurakPanel.SetActive(false); RazPanel.SetActive(false);
-		if (currentSelection.Equals("Durak"))
-			DurakPanel.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
-		else if (currentSelection.Equals("Raz"))
-			RazPanel.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
+		DurakSettings.SetActive(false); RazSettings.SetActive(false);
+		if (currentSelection.Equals("Raz"))
+			RazSettings.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
+		else if (currentSelection.Equals("Durak"))
+			DurakSettings.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
 	}
 	public void ButtonsMenuActive(bool interactable)
 	{

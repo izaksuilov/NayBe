@@ -22,6 +22,8 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
             MapController.RemovePlayer();
             isAllInRoom = false;
         }
+        if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))
+            Leave();
 
     }
     public override void OnPlayerEnteredRoom(Player newPlayer)

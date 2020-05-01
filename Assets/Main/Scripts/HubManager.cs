@@ -11,7 +11,6 @@ public class HubManager : MonoBehaviourPunCallbacks
 {
 	string gameVersion = "1";
 	[SerializeField] private Button CreateButton;
-	[SerializeField] private Button JoinButton;
 	[SerializeField] private Text TitleText;
 	[SerializeField] private Text DescriptionText;
 	[SerializeField] private GameObject RazSettings;
@@ -23,12 +22,13 @@ public class HubManager : MonoBehaviourPunCallbacks
 		public string Description;
 		public string Scene;
 	}
-
 	Dictionary<string, Data> _data = new Dictionary<string, Data>();
-
 	string currentSelection;
-
-	// Use this for initialization
+	void Update()
+	{
+		if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))
+			Application.Quit();
+	}
 	void Awake()
 	{
         #region Network
@@ -82,14 +82,13 @@ public class HubManager : MonoBehaviourPunCallbacks
 	{
 		PhotonNetwork.CreateRoom(null, new RoomOptions {MaxPlayers = Convert.ToByte(MaxP.text)});
 	}
+	public override void OnJoinedRoom()
+	{
+		SceneManager.LoadScene(_data[currentSelection].Scene);
+	}
 	public void Join()
 	{
 		PhotonNetwork.JoinRandomRoom();
-	}
-	public override void OnJoinedRoom()
-	{
-		if (!string.IsNullOrEmpty(currentSelection))
-			SceneManager.LoadScene(_data[currentSelection].Scene);
 	}
 	public override void OnJoinRandomFailed(short returnCode, string message)
 	{
@@ -115,6 +114,5 @@ public class HubManager : MonoBehaviourPunCallbacks
 	public void ButtonsMenuActive(bool interactable)
 	{
 		CreateButton.interactable = interactable;
-		JoinButton.interactable = interactable;
 	}
 }

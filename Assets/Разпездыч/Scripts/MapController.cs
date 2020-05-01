@@ -33,10 +33,12 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// </summary>
     private void ArrangePlayers()
     {
-        players.Sort(new PlayerComparer());//сортируем игроков, в порядке очереди
+        players.Sort(new PlayerComparer());//сортируем игроков, в в обратном порядке очереди
+                                           //(так игроки будут ходить по часовой стрелке)
+                                           //и ставим нашего игрока первым в массиве
         for (int i = 0; i < players.Count; i++)
         {
-            if (players[i].GetComponent<PhotonView>().IsMine)//ставим нашего игрока первым в массиве
+            if (players[i].GetComponent<PhotonView>().IsMine)//
             {
                 for (int j = i; j > 0; j--)
                 {
@@ -49,8 +51,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 goto outer;
             }
         }
-     outer:
-        //расставляем игроков по часовой стрелке
+    outer:
         List<GameObject> PlayerPositions = 
             FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "PlayerPosition");
         for (int i = 0; i < players.Count; i++)
@@ -133,7 +134,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         return idx;
     }
     /// <summary>
-    /// Искать объект-ребенок в объекте-родителе по тегу
+    /// Находит объект-ребенок в объекте-родителе по тегу
     /// </summary>
     /// <param name="parent">Объект, в котором нужно искать</param>
     /// <param name="tag">Тег объекта-ребенка</param>
@@ -175,9 +176,9 @@ class PlayerComparer : IComparer<PlayerControl>
     public int Compare(PlayerControl p1, PlayerControl p2)
     {
         if (p1.GetComponent<PhotonView>().OwnerActorNr > p2.GetComponent<PhotonView>().OwnerActorNr)
-            return 1;
-        else if (p1.GetComponent<PhotonView>().OwnerActorNr < p2.GetComponent<PhotonView>().OwnerActorNr)
             return -1;
+        else if (p1.GetComponent<PhotonView>().OwnerActorNr < p2.GetComponent<PhotonView>().OwnerActorNr)
+            return 1;
         return 0;
     }
 }

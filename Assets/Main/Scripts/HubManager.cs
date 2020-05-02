@@ -15,6 +15,7 @@ public class HubManager : MonoBehaviourPunCallbacks
 	[SerializeField] private Text DescriptionText;
 	[SerializeField] private GameObject RazSettings;
 	[SerializeField] private GameObject DurakSettings;
+	[SerializeField] private GameObject NayBeSettings;
 	[SerializeField] private Text MaxP;
 	struct Data
 	{
@@ -105,11 +106,13 @@ public class HubManager : MonoBehaviourPunCallbacks
 		TitleText.text = _data[currentSelection].Title;
 		DescriptionText.text = _data[currentSelection].Description;
 
-		DurakSettings.SetActive(false); RazSettings.SetActive(false);
+		DurakSettings.SetActive(false); RazSettings.SetActive(false); NayBeSettings.SetActive(false);
 		if (currentSelection.Equals("Raz"))
-			RazSettings.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
+			RazSettings.SetActive(true);
 		else if (currentSelection.Equals("Durak"))
-			DurakSettings.SetActive(!string.IsNullOrEmpty(_data[currentSelection].Scene));
+			DurakSettings.SetActive(true);
+		else if (currentSelection.Equals("NayBe"))
+			NayBeSettings.SetActive(true);
 	}
 	public void ButtonsMenuActive(bool interactable)
 	{

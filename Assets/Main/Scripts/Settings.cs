@@ -9,28 +9,43 @@ public enum Events : byte
 }
 public static class Settings
 {
-    public static int colorScheme = 0;
-    static string path = Application.persistentDataPath + "/settings.gd";
-    public static void Save()
-    {
-        BinaryFormatter bf = new BinaryFormatter();
-        using (FileStream file = File.Create(path))
-            bf.Serialize(file, colorScheme);
-    }
-    public static void Load()
-    {
-        if (File.Exists(path))
-        {
-            BinaryFormatter bf = new BinaryFormatter();
-            using (FileStream file = File.Open(path, FileMode.Open))
-                colorScheme = (int)bf.Deserialize(file);
-        }
-        else colorScheme = 0;
-    }
-    public static void ChangeColorScheme(int x)
+    static string path = Application.persistentDataPath + "/settings";
+    
+    #region Color
+    public static int colorScheme { get; private set; } = 0;
+    public async static void SaveColor(int x)
     {
         if (x < 0 || x > 3) return;
         colorScheme = x;
-        Save();
+        using (StreamWriter file = new StreamWriter(path, false))
+            await file.WriteLineAsync(colorScheme.ToString());
+    }
+    #endregion
+    #region NickName
+    public static string nickName { get; private set; } = "";
+    public static void SaveNickName(string newName)
+    {
+        nickName = newName;
+        string[] file = File.ReadAllLines(path);
+        file[1] = nickName;
+        File.WriteAllLines(path, file);
+    }
+    #endregion
+    public async static void Load()
+    {
+        if (File.Exists(path))
+        {
+            string[] file = File.ReadAllLines(path);
+            colorScheme = int.Parse(file[0]);
+            nickName = file[1];
+        }
+        else 
+        {
+            using (StreamWriter file = new StreamWriter(path, true))
+            {
+                await file.WriteLineAsync(colorScheme.ToString());
+                await file.WriteLineAsync(nickName);
+            }
+        } 
     }
 }

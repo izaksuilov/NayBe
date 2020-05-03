@@ -17,6 +17,7 @@ public class HubManager : MonoBehaviourPunCallbacks
 	[SerializeField] private GameObject DurakSettings;
 	[SerializeField] private GameObject NayBeSettings;
 	[SerializeField] private Text MaxP;
+	[SerializeField] private InputField NickName;
 	struct Data
 	{
 		public string Title;
@@ -32,13 +33,13 @@ public class HubManager : MonoBehaviourPunCallbacks
 	}
 	void Awake()
 	{
-        #region Network
-        PhotonNetwork.NickName = "Player " + Random.Range(1, 100);
+		Settings.Load();
+		#region Network
+		PhotonNetwork.NickName = "Player " + Random.Range(1, 100);
 		PhotonNetwork.AutomaticallySyncScene = true;
 		PhotonNetwork.ConnectUsingSettings();
 		PhotonNetwork.GameVersion = gameVersion;
 		#endregion
-		ButtonsMenuActive(false);
 		#region Создаем разделы
 		_data.Add(
 			"Raz",
@@ -73,14 +74,20 @@ public class HubManager : MonoBehaviourPunCallbacks
 	}
 	private void OnLevelWasLoaded()
 	{
-		ButtonsMenuActive(false);
+		CreateButton.interactable = false;
 	}
 	public override void OnConnectedToMaster()
 	{
-		ButtonsMenuActive(true);
+		CreateButton.interactable = true;
 	}
 	public void Create()
 	{
+		if (NickName.text.Equals(""))
+		{
+			CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Введите Никнейм";
+			CreateButton.interactable = false;
+			return;
+		}
 		PhotonNetwork.CreateRoom(null, new RoomOptions {MaxPlayers = Convert.ToByte(MaxP.text)});
 	}
 	public override void OnJoinedRoom()
@@ -113,9 +120,5 @@ public class HubManager : MonoBehaviourPunCallbacks
 			DurakSettings.SetActive(true);
 		else if (currentSelection.Equals("NayBe"))
 			NayBeSettings.SetActive(true);
-	}
-	public void ButtonsMenuActive(bool interactable)
-	{
-		CreateButton.interactable = interactable;
 	}
 }

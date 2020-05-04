@@ -30,9 +30,11 @@ public class HubManager : MonoBehaviourPunCallbacks
 	{
 		if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))
 			Application.Quit();
+			
 	}
 	void Awake()
 	{
+		CreateButton.interactable = false;
 		Settings.Load();
 		#region Network
 		PhotonNetwork.NickName = "Player " + Random.Range(1, 100);
@@ -71,10 +73,6 @@ public class HubManager : MonoBehaviourPunCallbacks
 
 		#endregion
 		SelectGame("Raz");
-	}
-	private void OnLevelWasLoaded()
-	{
-		CreateButton.interactable = false;
 	}
 	public override void OnConnectedToMaster()
 	{

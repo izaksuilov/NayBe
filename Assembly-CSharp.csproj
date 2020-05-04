@@ -69,6 +69,7 @@
     <Compile Include="Assets\Main\Scripts\ChangeNickName.cs" />
     <Compile Include="Assets\Main\Scripts\ColorManager.cs" />
     <Compile Include="Assets\Main\Scripts\HubManager.cs" />
+    <Compile Include="Assets\Main\Scripts\ImageSelect.cs" />
     <Compile Include="Assets\Main\Scripts\NumberScript.cs" />
     <Compile Include="Assets\Main\Scripts\PlayerScript.cs" />
     <Compile Include="Assets\Main\Scripts\Settings.cs" />

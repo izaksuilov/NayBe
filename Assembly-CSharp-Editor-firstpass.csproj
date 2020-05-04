@@ -64,12 +64,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Plugins\NativeGallery\Editor\NGPostProcessBuild.cs" />
-    <Reference Include="Unity.VectorGraphics">
-      <HintPath>C:/Program Files/Unity Hub/NayBe/Library/ScriptAssemblies/Unity.VectorGraphics.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.InternalAPIEditorBridge.003">
-      <HintPath>C:/Program Files/Unity Hub/NayBe/Library/ScriptAssemblies/Unity.InternalAPIEditorBridge.003.dll</HintPath>
-    </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">
       <HintPath>C:/Program Files/Unity Hub/NayBe/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
@@ -78,9 +72,6 @@
     </Reference>
     <Reference Include="Unity.CollabProxy.Editor">
       <HintPath>C:/Program Files/Unity Hub/NayBe/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.VectorGraphics.Editor">
-      <HintPath>C:/Program Files/Unity Hub/NayBe/Library/ScriptAssemblies/Unity.VectorGraphics.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>C:/Program Files/Unity Hub/NayBe/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>

@@ -30,7 +30,6 @@ public class HubManager : MonoBehaviourPunCallbacks
 	{
 		if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))
 			Application.Quit();
-			
 	}
 	void Awake()
 	{

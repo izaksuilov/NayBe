@@ -3,9 +3,9 @@ PlayerPath?
 C:/Users/izaku/Desktop/ww.apk
 SceneListBegin?
 Assets/Main/Main.unity
+Assets/Разпездыч/Raz.unity
 Assets/Дурак/Durak.unity
 Assets/Наебень/Naybe.unity
-Assets/Разпездыч/Raz.unity
 SceneListEnd?
 80d2851602cb4bcb6f559596c5eb955b PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.PlayerListCell
 71bb6a6b6c8f052f948db64c7dd3ca4f PhotonUnityNetworking.Utilities.dll:Photon.Pun.UtilityScripts.PunTeams
@@ -75,7 +75,7 @@ aa165095bcf0f4d99594ea33df01c81b UnityEngine.UI.dll:UnityEngine.UI.Slider
 0fd6822f6177297bd0eb4d83cc7a9030 UnityEngine.UI.dll:UnityEngine.UI.ToggleGroup
 abf1930d8126d0b2e00e9449129a0190 UnityEngine.UI.dll:UnityEngine.EventSystems.TouchInputModule
 64e54c0cbb0177c5ea26f340efb9ff85 UnityEngine.UI.dll:UnityEngine.UI.VerticalLayoutGroup
-1324a3104eade3ce4479f60904828aad Assembly-CSharp.dll:.MapController
+520fa133e2ab1b28f232350d8815e382 Assembly-CSharp.dll:.MapController
 d3c76b14a25eebd3a3323dd43297919c Unity.TextMeshPro.dll:TMPro.TMP_InputField
 b1f26da3046d8b188758169a9d6b1078 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.SlotRacer.Utils.BezierSpline
 c656dcc13ae391b68d594cc8f9c590b0 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.CountOfPlayersOnMasterProperty
@@ -222,7 +222,6 @@ e0ee4b3d4e27318934cc940a969d3d96 UnityEngine.Networking.dll:UnityEngine.Networki
 ad9173d3a69d99153f38ed4b62226129 UnityEngine.Networking.dll:UnityEngine.Networking.NetworkTransform
 9b895dcabbc1faf095c000c32d471fd0 UnityEngine.Networking.dll:UnityEngine.Networking.NetworkTransformChild
 5887ef1bc706b22b773d253fd443ceef UnityEngine.Networking.dll:UnityEngine.Networking.NetworkTransformVisualizer
-0145ae6defd66ef623c50b1935f0ce10 Unity.VectorGraphics.dll:.SVGImage
 a8a4fba96bef6fccf7bb4be2f06c16b6 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.Forms.LoadLevelUIForm
 4ce15e99c635d2567873d27549d1f16f PhotonUnityNetworking.Utilities.dll:Photon.Pun.UtilityScripts.PointedAtGameObjectInfo
 45c963b8e7743c8879d83d596618f20a Assembly-CSharp.dll:.ChangeNickName
@@ -255,6 +254,7 @@ c656dcc13ae391b68d594cc8f9c590b0 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo
 5fa13cbf159ba00e417aff3ebd2430ec Assembly-CSharp.dll:.RazManager
 0b24359b178f2110b72f9b386ac3b17c PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.PunBasics.CameraWork
 e10400e84c8c573b2b5e4088aca77453 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.PunBasics.PlayerManager
+71bb6a6b6c8f052f948db64c7dd3ca4f Assembly-CSharp.dll:.CardScript
 9db963832ef7feebd35f44e6ad6f646c PhotonUnityNetworking.Utilities.dll:Photon.Pun.UtilityScripts.OnJoinedInstantiate
 d7f7bc402888d42a0dbb080693e6863c PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.PunBasics.LoaderAnime
 3b760e6526e13f7504f59e210145899a Unity.TextMeshPro.dll:TMPro.TextMeshProUGUI
@@ -292,6 +292,7 @@ c656dcc13ae391b68d594cc8f9c590b0 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo
 c656dcc13ae391b68d594cc8f9c590b0 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.CurrentRoomPlayerCountProperty
 d9864ada3db659b8d6f66a20aff414b3 PhotonUnityNetworking.dll:Photon.Pun.PhotonView
 c656dcc13ae391b68d594cc8f9c590b0 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.OfflineModeProperty
+71bb6a6b6c8f052f948db64c7dd3ca4f Assembly-CSharp.dll:.HandScript
 8649814970b42d345b89944b862453cc Unity.TextMeshPro.dll:TMPro.TMP_SubMesh
 87207d40b89ca632396b05b3cb1e69b0 PhotonUnityNetworking.Utilities.dll:Photon.Pun.UtilityScripts.PlayerNumbering
 c656dcc13ae391b68d594cc8f9c590b0 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.CurrentRoomExpectedUsersProperty

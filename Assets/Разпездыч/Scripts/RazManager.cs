@@ -16,21 +16,14 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     }
     private void Update()
     {
-        //В случае, если игрок закрыл приложение
-        if (isAllInRoom && PhotonNetwork.CurrentRoom.PlayerCount != PhotonNetwork.CurrentRoom.MaxPlayers)
-        {
-            MapController.RemovePlayer();
-            isAllInRoom = false;
-        }
         if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))
             Leave();
-
     }
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers)
             isAllInRoom = true;
-}
+    }
     public override void OnLeftRoom()
     {
         SceneManager.LoadScene(0);

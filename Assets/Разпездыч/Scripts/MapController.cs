@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] private Sprite[] cardsImage;//лицевые стороны карт
-    [SerializeField] private GameObject prefab;//префаб карты
+    [SerializeField] private GameObject cardPrefab;//префаб карты
     [SerializeField] private GameObject[] playersPositions;//позиции, на которых распложены игроки и карты
     private List<GameObject> cards = new List<GameObject>();
     private List<PlayerControl> players = new List<PlayerControl>();
@@ -75,7 +75,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         //создать нужное количество карт
         for (int i = 0; i < cardsImage.Length; i++)
         {
-            GameObject card = Instantiate(prefab, new Vector3(0, 0, 0), Quaternion.identity);
+            GameObject card = Instantiate(cardPrefab, new Vector3(0, 0, 0), Quaternion.identity);
             card.transform.GetChild(0).GetChild(0).GetComponent<Image>().sprite = cardsImage[idx[i]];
             cards.Add(card);
         }

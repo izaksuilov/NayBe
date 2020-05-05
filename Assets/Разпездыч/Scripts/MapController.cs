@@ -171,6 +171,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
     }
     #endregion
 }
+/// <summary>
+/// Сортировка игроков
+/// </summary>
 class PlayerComparer : IComparer<PlayerControl>
 {
     public int Compare(PlayerControl p1, PlayerControl p2)

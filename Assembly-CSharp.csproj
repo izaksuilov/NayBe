@@ -77,8 +77,8 @@
     <Compile Include="Assets\Main\Scripts\SearchSettings.cs" />
     <Compile Include="Assets\Main\Scripts\Settings.cs" />
     <Compile Include="Assets\Main\Scripts\SliderStep.cs" />
-    <Compile Include="Assets\Main\Scripts\ToggleBtnImageColor.cs" />
     <Compile Include="Assets\Main\Scripts\ToggleBtnTextColor.cs" />
+    <Compile Include="Assets\Main\Scripts\ToggleGroupDisable.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\Common\EventSystemSpawner.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\Common\OnStartDelete.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\Common\TextButtonTransition.cs" />

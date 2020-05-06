@@ -9,7 +9,7 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 {
-	string sqlLobbyFilter = "";
+	string sqlLobbyFilter = "(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= 1000000)";
 	[SerializeField] private GameObject SettingsWindow;
 	[SerializeField] private GameObject SearchGameWindow;
 	[SerializeField] private GameObject CreateGameWindow;
@@ -32,6 +32,8 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	{
 		if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))//выход из приложения свайпом вверх
 			Application.Quit();
+		if (SearchGameWindow.activeSelf)
+			PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
 	}
 	void Awake()
 	{
@@ -44,7 +46,6 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		#endregion
 		SelectWindow("Create");
 		SelectGame("Raz");
-		StartCoroutine(RefreshLobbyList());
 	}
     public override void OnConnectedToMaster()
 	{
@@ -88,12 +89,22 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	}
 	public override void OnRoomListUpdate(List<RoomInfo> roomList)
 	{
+		foreach (Transform child in ListOfRooms.transform)
+			Destroy(child.gameObject);
 		if (roomList.Count > 0)
 		{
 			for (int i = 0; i < roomList.Count; i++)
 			{
 				Instantiate(RoomPrefab, ListOfRooms);
-				//roomList[i].PlayerCount;
+				RoomPrefab.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = roomList[i].Name;
+				RoomPrefab.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(1).GetChild(0).GetComponent<Text>().text 
+					= roomList[i].CustomProperties["C0"].ToString();
+				RoomPrefab.transform.GetChild(1).GetChild(0).GetChild(1).GetChild(1).GetChild(0).GetComponent<Text>().text
+					= roomList[i].CustomProperties["C1"].ToString();
+				RoomPrefab.transform.GetChild(1).GetChild(1).GetChild(0).GetChild(1).GetChild(0).GetComponent<Text>().text
+					= roomList[i].CustomProperties["C2"].ToString();
+				RoomPrefab.transform.GetChild(1).GetChild(1).GetChild(1).GetChild(1).GetChild(0).GetComponent<Text>().text
+					= $"{roomList[i].PlayerCount} / {roomList[i].MaxPlayers}";
 			}
 		}
 	}
@@ -132,28 +143,17 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	public void ApplyFilter()
 	{
 		string selectedGames = "(", selectedCards = "(";
-		sqlLobbyFilter = "123";
-		if (CreateSqlFilter(SearchGames, "C0", ref selectedGames)
-		 && CreateSqlFilter(SearchCards, "C1", ref selectedCards))
-				sqlLobbyFilter = $"{selectedGames} AND {selectedCards} " +
-					$"AND (C2 >= {int.Parse(SearchBetFrom.text)} AND C2 <= {int.Parse(SearchBetTo.text)})";
+		CreateSqlFilter(SearchGames, "C0", ref selectedGames);
+		CreateSqlFilter(SearchCards, "C1", ref selectedCards);
+		sqlLobbyFilter = $"{selectedGames} AND {selectedCards} " +
+			$"AND (C2 >= {int.Parse(SearchBetFrom.text)} AND C2 <= {int.Parse(SearchBetTo.text)})";
 		Debug.Log(sqlLobbyFilter);
 	}
-	bool CreateSqlFilter(GameObject obj, string parameter, ref string s)
+	void CreateSqlFilter(GameObject obj, string parameter, ref string s)
 	{
 		for (int i = 0; i < obj.transform.childCount; i++)
 			if (obj.transform.GetChild(i).GetComponent<Toggle>().isOn)
 				s += $"{parameter} = \"{obj.transform.GetChild(i).name}\" OR ";
-		if (!s.Contains("OR")) 
-			return false;
 		s = s.Remove(s.Length - 4) + ")";
-		return true;
-	}
-	IEnumerator RefreshLobbyList()
-	{
-		if (SearchGameWindow.activeSelf && PhotonNetwork.IsConnectedAndReady)
-			PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
-		yield return new WaitForSeconds(4);
-		StartCoroutine(RefreshLobbyList());
 	}
 }

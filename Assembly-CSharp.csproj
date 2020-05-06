@@ -69,6 +69,7 @@
     <Compile Include="Assets\Main\Scripts\CameraScript.cs" />
     <Compile Include="Assets\Main\Scripts\ChangeNickName.cs" />
     <Compile Include="Assets\Main\Scripts\ColorManager.cs" />
+    <Compile Include="Assets\Main\Scripts\ContentScript.cs" />
     <Compile Include="Assets\Main\Scripts\HubManager.cs" />
     <Compile Include="Assets\Main\Scripts\ImageSelect.cs" />
     <Compile Include="Assets\Main\Scripts\NumberScript.cs" />
@@ -76,6 +77,7 @@
     <Compile Include="Assets\Main\Scripts\SearchSettings.cs" />
     <Compile Include="Assets\Main\Scripts\Settings.cs" />
     <Compile Include="Assets\Main\Scripts\SliderStep.cs" />
+    <Compile Include="Assets\Main\Scripts\ToggleBtnImageColor.cs" />
     <Compile Include="Assets\Main\Scripts\ToggleBtnTextColor.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\Common\EventSystemSpawner.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\Common\OnStartDelete.cs" />

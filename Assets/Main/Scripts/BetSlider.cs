@@ -7,6 +7,7 @@ public class BetSlider : MonoBehaviour
     void Start()
     {
         SyncBets();
+        FindObjectOfType<HubManager>().ApplyFilter();
     }
     public void SyncBets()
     {

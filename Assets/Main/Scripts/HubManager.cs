@@ -1,10 +1,11 @@
-﻿using ExitGames.Client.Photon;
-using Photon.Pun;
+﻿using Photon.Pun;
 using Photon.Realtime;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 {
@@ -21,17 +22,16 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	[SerializeField] private Text MaxP;
 	[SerializeField] private InputField NickName;
 	[SerializeField] private GameObject SearchGames;
-	[SerializeField] private GameObject SearchPlayers;
 	[SerializeField] private GameObject SearchCards;
 	[SerializeField] private Text SearchBetFrom;
 	[SerializeField] private Text SearchBetTo;
+	[SerializeField] private Transform ListOfRooms;
+	[SerializeField] private GameObject RoomPrefab;
 	string currentSelection;
 	void Update()
 	{
 		if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))//выход из приложения свайпом вверх
 			Application.Quit();
-		//if (SearchGameWindow.activeSelf)
-		//	PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
 	}
 	void Awake()
 	{
@@ -44,6 +44,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		#endregion
 		SelectWindow("Create");
 		SelectGame("Raz");
+		StartCoroutine(RefreshLobbyList());
 	}
     public override void OnConnectedToMaster()
 	{
@@ -57,13 +58,13 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 			CreateButton.interactable = false;
 			return;
 		}
-		int cards = 0;
+		string cards = "";
 		for (int i = 0; i < Cards.transform.childCount-1; i++)//получаем выбранное количество карт
 			if (Cards.transform.GetChild(i).GetComponent<Toggle>().isOn)
-				cards = int.Parse(Cards.transform.GetChild(i).GetChild(1).GetComponent<Text>().text);
+				cards = Cards.transform.GetChild(i).GetChild(1).GetComponent<Text>().text;
 
-		RoomOptions roomOptions = new RoomOptions();//создаём комнату: C0 -- Вид игры, С1 -- Ставка, С2 -- Количетсво карт
-		roomOptions.CustomRoomProperties = new Hashtable() { { "C0", currentSelection }, { "C1", int.Parse(Bet.text) }, { "C2", cards } };
+		RoomOptions roomOptions = new RoomOptions();//создаём комнату: C0 -- Вид игры, С1 -- Количетсво карт, С2 -- Ставка 
+		roomOptions.CustomRoomProperties = new Hashtable() { { "C0", currentSelection }, { "C1", cards }, { "C2", int.Parse(Bet.text) } };
 		roomOptions.CustomRoomPropertiesForLobby = new string[] { "C0", "C1", "C2" };
 		roomOptions.MaxPlayers = byte.Parse(MaxP.text);
 		PhotonNetwork.CreateRoom(RoomName.text.Equals("") ? NickName.text : RoomName.text,
@@ -72,9 +73,9 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	}
 	public void Join()
 	{
-		sqlLobbyFilter = "(C0 = \"Raz\" OR C0 = \"Durak\") AND C1 = 100";
-		PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
-		Debug.Log(sqlLobbyFilter);
+		//TypedLobby sqlLobby = new TypedLobby("myLobby", LobbyType.SqlLobby);    // same as above
+		//string sqlLobbyFilter = "C0 = 0";   // find a game with mode 0
+		//lbClient.OpJoinRandomRoom(null, expectedMaxPlayers, matchmakingMode, sqlLobby, sqlLobbyFilter);
 		//PhotonNetwork.JoinRandomRoom();
 	}
 	public override void OnJoinedRoom()
@@ -87,7 +88,14 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	}
 	public override void OnRoomListUpdate(List<RoomInfo> roomList)
 	{
-		Debug.Log(roomList[0]);
+		if (roomList.Count > 0)
+		{
+			for (int i = 0; i < roomList.Count; i++)
+			{
+				Instantiate(RoomPrefab, ListOfRooms);
+				//roomList[i].PlayerCount;
+			}
+		}
 	}
 	public override void OnDisconnected(DisconnectCause cause)
 	{
@@ -123,16 +131,29 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	}
 	public void ApplyFilter()
 	{
-		string selectedGames = "", selectedPlayers = "", selectedCards = ""; 
-		for (int i = 0; i < SearchGames.transform.childCount; i++)
-		{
-			if (SearchGames.transform.GetChild(i).GetComponent<Toggle>().isOn)
-			{
-				selectedGames += $"C0 = \"{SearchGames.transform.GetChild(i).name}\" OR ";
-			}
-		}
-		sqlLobbyFilter = selectedGames;
-		//sqlLobbyFilter = $"C0 = \"{selectedGame}\" AND C1 = 100";
+		string selectedGames = "(", selectedCards = "(";
+		sqlLobbyFilter = "123";
+		if (CreateSqlFilter(SearchGames, "C0", ref selectedGames)
+		 && CreateSqlFilter(SearchCards, "C1", ref selectedCards))
+				sqlLobbyFilter = $"{selectedGames} AND {selectedCards} " +
+					$"AND (C2 >= {int.Parse(SearchBetFrom.text)} AND C2 <= {int.Parse(SearchBetTo.text)})";
+		Debug.Log(sqlLobbyFilter);
 	}
-
+	bool CreateSqlFilter(GameObject obj, string parameter, ref string s)
+	{
+		for (int i = 0; i < obj.transform.childCount; i++)
+			if (obj.transform.GetChild(i).GetComponent<Toggle>().isOn)
+				s += $"{parameter} = \"{obj.transform.GetChild(i).name}\" OR ";
+		if (!s.Contains("OR")) 
+			return false;
+		s = s.Remove(s.Length - 4) + ")";
+		return true;
+	}
+	IEnumerator RefreshLobbyList()
+	{
+		if (SearchGameWindow.activeSelf && PhotonNetwork.IsConnectedAndReady)
+			PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
+		yield return new WaitForSeconds(4);
+		StartCoroutine(RefreshLobbyList());
+	}
 }

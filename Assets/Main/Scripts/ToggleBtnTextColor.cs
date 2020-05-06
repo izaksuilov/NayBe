@@ -14,7 +14,14 @@ public class ToggleBtnTextColor : MonoBehaviour
             lightColor = ColorManager.activeColor[Settings.colorScheme];
         }
         if (GetComponent<Toggle>().isOn == true)
-            GetComponent<Toggle>().gameObject.transform.GetChild(1).GetComponent<Text>().color = lightColor;
+        {
+            try
+            {
+                GetComponent<Toggle>().gameObject.transform.GetChild(1).GetComponent<Image>().color = lightColor;
+            }
+            
+        }
+            
         else GetComponent<Toggle>().gameObject.transform.GetChild(1).GetComponent<Text>().color = darkColor;
     }
 }

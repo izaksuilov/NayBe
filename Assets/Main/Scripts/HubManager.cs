@@ -17,6 +17,8 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	[SerializeField] GameObject DurakSettings;
 	[SerializeField] Text Bet;
 	[SerializeField] GameObject Cards;
+	[SerializeField] Text UnAss;
+	[SerializeField] Text UnAff;
 	[SerializeField] Text RoomName;
 	[SerializeField] Button CreateButton;
 	[SerializeField] Text MaxP;
@@ -70,6 +72,10 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 
 		RoomOptions roomOptions = new RoomOptions();//создаём комнату: C0 -- Вид игры, С1 -- Количетсво карт, С2 -- Ставка 
 		roomOptions.CustomRoomProperties = new Hashtable() { { "C0", currentSelection }, { "C1", cards }, { "C2", int.Parse(Bet.text) } };
+		if (RazSettings.activeSelf)
+			roomOptions.CustomRoomProperties.Add("C3", int.Parse(UnAss.text));
+		else if (DurakSettings.activeSelf)
+			roomOptions.CustomRoomProperties.Add("C3", int.Parse(UnAff.text));
 		roomOptions.CustomRoomPropertiesForLobby = new string[] { "C0", "C1", "C2" };
 		roomOptions.MaxPlayers = byte.Parse(MaxP.text);
 		PhotonNetwork.CreateRoom(RoomName.text.Equals("") ? NickName.text : RoomName.text,

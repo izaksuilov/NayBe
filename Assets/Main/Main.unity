@@ -1314,6 +1314,8 @@ MonoBehaviour:
   DurakSettings: {fileID: 1071024906}
   Bet: {fileID: 2020313588}
   Cards: {fileID: 1125658959}
+  UnAss: {fileID: 2019510345}
+  UnAff: {fileID: 1218297671}
   RoomName: {fileID: 2013264349}
   CreateButton: {fileID: 1466477770}
   MaxP: {fileID: 1280186167}
@@ -2025,8 +2027,8 @@ MonoBehaviour:
   m_FillRect: {fileID: 41564448}
   m_HandleRect: {fileID: 1888527582}
   m_Direction: 0
-  m_MinValue: 2
-  m_MaxValue: 5
+  m_MinValue: 1
+  m_MaxValue: 4
   m_WholeNumbers: 1
   m_Value: 2
   m_OnValueChanged:

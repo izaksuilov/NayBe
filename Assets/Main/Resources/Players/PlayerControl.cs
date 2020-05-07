@@ -6,9 +6,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
 {
     PhotonView photonView;
     SpriteRenderer spriteRenderer;
-    public int unAss { get; private set; } =  1;
-    public List<GameObject> cards { get; set; }
-    public List<GameObject> unAssCards = new List<GameObject>();
+    public int unAss { get; private set; }
     public bool isPlayerTurn { get; set; } =  false;
 
     bool isRed;
@@ -31,7 +29,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     {
         photonView = GetComponent<PhotonView>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-
+        unAss = (int)PhotonNetwork.CurrentRoom.CustomProperties["C3"];
         FindObjectOfType<MapController>().AddPlayer(this);
     }
 

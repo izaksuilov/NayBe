@@ -21,7 +21,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] Sprite[] cardsImage;//лицевые стороны карт
     [SerializeField] GameObject cardPrefab;//префаб карты
-    [SerializeField] GameObject[] playersPositions;//позиции, на которых распложены игроки и карты
+    [SerializeField] GameObject[] positions;//позиции, на которых распложены игроки и карты
     List<Card> cards = new List<Card>();
     List<PlayerControl> players = new List<PlayerControl>();
     /// <summary>
@@ -31,7 +31,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     public void AddPlayer(PlayerControl player)
     {
         players.Add(player);//когда добавляется игрок, нужно переместить всех игроков в зависимости от их количества
-        //ArrangePlayers();
+        ArrangePlayers();
         //если комната полная
         if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)
         {
@@ -50,7 +50,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
                                            //и ставим нашего игрока первым в массиве
         for (int i = 0; i < players.Count; i++)
         {
-            if (players[i].GetComponent<PhotonView>().IsMine)//
+            if (players[i].GetComponent<PhotonView>().IsMine)
             {
                 for (int j = i; j > 0; j--)
                 {
@@ -65,18 +65,12 @@ public class MapController : MonoBehaviour, IOnEventCallback
         }
     outer:
         List<GameObject> PlayerPositions = 
-            FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "PlayerPosition");
+            FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "PlayerPosition");
         for (int i = 0; i < players.Count; i++)
         {
             players[i].transform.SetParent(PlayerPositions[players.Count - 1 - i].transform);
             players[i].transform.localPosition = new Vector3(0, 0, 0);
         }
-        if (players.Count == 1)
-        {
-            players[0].transform.SetParent(PlayerPositions[1].transform);
-            players[0].transform.localPosition = new Vector3(0, 0, 0);
-        }
-
     }
     /// <summary>
     /// Начать игру
@@ -92,21 +86,21 @@ public class MapController : MonoBehaviour, IOnEventCallback
             string[] name = cardsImage[idx[i]].name.Split('_');
             cards.Add(new Card(obj, int.Parse(name[0]), name[1]));
         }
-        //положить каждому игроку соответствующее количество поджопников
-        //int k = 0;
-        //List<GameObject> UnAssPositions = 
-        //    FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
-        //foreach (var player in players)
-        //{
-        //    for (int i = 0; i < player.unAss; i++, k++)
-        //    {
-        //        var card = cards[k].obj;
-        //        card.transform.SetParent(UnAssPositions[k].transform);
-        //        card.transform.localPosition = new Vector3(0, 0, 0);
-        //        player.unAssCards.Add(card);
-        //        //card.transform.rotation = Quaternion.AngleAxis(90, card.transform.localPosition);
-        //    }
-        //}
+        //положить каждому игроку соответствующее количество UnAss
+        int k = 0;
+        List<GameObject> UnAssPositions =
+            FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
+        foreach (var player in players)
+        {
+            for (int i = 0; i < player.unAss; i++)
+            {
+                var card = cards[i].obj;
+                card.transform.SetParent(UnAssPositions[k].transform);
+                card.transform.localPosition = new Vector3(0, 0, 0);
+                card.transform.rotation = Quaternion.Euler(0, 0, 90);
+                card.transform.localScale = new Vector3(1, 1, 1);
+            }k++;
+        }
     }
     /// <summary>
     /// Убрать игрока из массива игроков

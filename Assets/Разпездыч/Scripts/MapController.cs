@@ -5,13 +5,25 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 using UnityEngine.UI;
 
+public struct Card
+{
+    public GameObject obj;
+    public int value;
+    public string suit;
+    public Card(GameObject _obj, int _value, string _suit)
+    {
+        obj = _obj;
+        value = _value;
+        suit = _suit;
+    }
+}
 public class MapController : MonoBehaviour, IOnEventCallback
 {
-    [SerializeField] private Sprite[] cardsImage;//лицевые стороны карт
-    [SerializeField] private GameObject cardPrefab;//префаб карты
-    [SerializeField] private GameObject[] playersPositions;//позиции, на которых распложены игроки и карты
-    private List<GameObject> cards = new List<GameObject>();
-    private List<PlayerControl> players = new List<PlayerControl>();
+    [SerializeField] Sprite[] cardsImage;//лицевые стороны карт
+    [SerializeField] GameObject cardPrefab;//префаб карты
+    [SerializeField] GameObject[] playersPositions;//позиции, на которых распложены игроки и карты
+    List<Card> cards = new List<Card>();
+    List<PlayerControl> players = new List<PlayerControl>();
     /// <summary>
     /// Добавить игрока в массив игроков
     /// </summary>
@@ -19,7 +31,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     public void AddPlayer(PlayerControl player)
     {
         players.Add(player);//когда добавляется игрок, нужно переместить всех игроков в зависимости от их количества
-        ArrangePlayers();
+        //ArrangePlayers();
         //если комната полная
         if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)
         {
@@ -56,12 +68,12 @@ public class MapController : MonoBehaviour, IOnEventCallback
             FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "PlayerPosition");
         for (int i = 0; i < players.Count; i++)
         {
-            players[i].transform.parent = PlayerPositions[players.Count - 1 - i].transform;
+            players[i].transform.SetParent(PlayerPositions[players.Count - 1 - i].transform);
             players[i].transform.localPosition = new Vector3(0, 0, 0);
         }
         if (players.Count == 1)
         {
-            players[0].transform.parent = PlayerPositions[1].transform;
+            players[0].transform.SetParent(PlayerPositions[1].transform);
             players[0].transform.localPosition = new Vector3(0, 0, 0);
         }
 
@@ -73,28 +85,28 @@ public class MapController : MonoBehaviour, IOnEventCallback
     private void StartGame(int[] idx)
     {
         //создать нужное количество карт
-        for (int i = 0; i < cardsImage.Length; i++)
+        for (int i = 0; i < idx.Length; i++)
         {
-            GameObject card = Instantiate(cardPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-            card.transform.GetChild(0).GetChild(0).GetComponent<Image>().sprite = cardsImage[idx[i]];
-            cards.Add(card);
+            GameObject obj = Instantiate(cardPrefab, new Vector3(0, 0, 0), Quaternion.identity);
+            obj.transform.GetChild(0).GetChild(0).GetComponent<Image>().sprite = cardsImage[idx[i]];
+            string[] name = cardsImage[idx[i]].name.Split('_');
+            cards.Add(new Card(obj, int.Parse(name[0]), name[1]));
         }
         //положить каждому игроку соответствующее количество поджопников
-        int k = 0;
-        List<GameObject> UnAssPositions = 
-            FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
-        foreach (var player in players)
-        {
-            for (int i = 0; i < player.unAss; i++, k++)
-            {
-                var card = cards[k];
-                card.transform.SetParent(UnAssPositions[k].transform);
-                card.transform.localPosition = new Vector3(0, 0, 0);
-                player.unAssCards.Add(card);
-                //card.transform.rotation = Quaternion.AngleAxis(90, card.transform.localPosition);
-            }
-        }
-
+        //int k = 0;
+        //List<GameObject> UnAssPositions = 
+        //    FindChildrenWithTag(playersPositions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
+        //foreach (var player in players)
+        //{
+        //    for (int i = 0; i < player.unAss; i++, k++)
+        //    {
+        //        var card = cards[k].obj;
+        //        card.transform.SetParent(UnAssPositions[k].transform);
+        //        card.transform.localPosition = new Vector3(0, 0, 0);
+        //        player.unAssCards.Add(card);
+        //        //card.transform.rotation = Quaternion.AngleAxis(90, card.transform.localPosition);
+        //    }
+        //}
     }
     /// <summary>
     /// Убрать игрока из массива игроков
@@ -120,12 +132,13 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// </summary>
     private int[] CreateRandomIds()
     {
+        int countOfCards = int.Parse((string)PhotonNetwork.CurrentRoom.CustomProperties["C1"]);
         List<int> list = new List<int>();
         //создаем псевдорандомный массив неповторяющихся чисел
-        int[] idx = new int[cardsImage.Length];
-        for (int i = 0; i < cardsImage.Length; i++)
+        int[] idx = new int[countOfCards];
+        for (int i = 51; i >= 51 - countOfCards; i--)
             list.Add(i);
-        for (int i = 0; i < cardsImage.Length; i++)
+        for (int i = 0; i < countOfCards; i++)
         {
             int randomId = UnityEngine.Random.Range(0, list.Count);
             idx[i] = list[randomId];

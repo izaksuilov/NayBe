@@ -2,13 +2,11 @@
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using ExitGames.Client.Photon;
 //todo решить проблему, когда мастер закрывает игру
 //todo решить проблему, когда выходит и добавляется игрок 
 public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
 {
     public GameObject playerPref;
-    private bool isAllInRoom = false;
     public MapController MapController; 
     void Start()
     {
@@ -21,8 +19,6 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     }
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
-        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers)
-            isAllInRoom = true;
     }
     public override void OnLeftRoom()
     {
@@ -30,20 +26,19 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     }
     public void Leave()
     {
-        isAllInRoom = false;
         MapController.RemovePlayer();
         PhotonNetwork.LeaveRoom();
     }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        if (stream.IsWriting)
-        {
-            stream.SendNext(isAllInRoom);
-        }
-        else
-        {
-            isAllInRoom = (bool)stream.ReceiveNext();
-        }
+        //if (stream.IsWriting)
+        //{
+        //    stream.SendNext();
+        //}
+        //else
+        //{
+        //     = ()stream.ReceiveNext();
+        //}
     }
 }

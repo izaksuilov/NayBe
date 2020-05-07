@@ -91,6 +91,7 @@
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\NamePickGui.cs" />
     <Compile Include="Assets\Photon\PhotonRealtime\Demos\DemoLoadBalancing\ConnectAndJoinRandomLb.cs" />
     <Compile Include="Assets\Разпездыч\Scripts\CardScript.cs" />
+    <Compile Include="Assets\Разпездыч\Scripts\DropPlaceScript.cs" />
     <Compile Include="Assets\Разпездыч\Scripts\HandScript.cs" />
     <Compile Include="Assets\Разпездыч\Scripts\MapController.cs" />
     <Compile Include="Assets\Разпездыч\Scripts\RazManager.cs" />

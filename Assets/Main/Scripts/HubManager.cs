@@ -1,6 +1,5 @@
 ﻿using Photon.Pun;
 using Photon.Realtime;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,26 +8,28 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 {
-	string sqlLobbyFilter = "(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= 1000000)";
-	[SerializeField] private GameObject SettingsWindow;
-	[SerializeField] private GameObject SearchGameWindow;
-	[SerializeField] private GameObject CreateGameWindow;
-	[SerializeField] private GameObject RazSettings;
-	[SerializeField] private GameObject DurakSettings;
-	[SerializeField] private Text Bet;
-	[SerializeField] private GameObject Cards;
-	[SerializeField] private Text RoomName;
-	[SerializeField] private Button CreateButton;
-	[SerializeField] private Text MaxP;
-	[SerializeField] private InputField NickName;
-	[SerializeField] private GameObject SearchGames;
-	[SerializeField] private GameObject SearchCards;
-	[SerializeField] private Text SearchBetFrom;
-	[SerializeField] private Text SearchBetTo;
-	[SerializeField] private Transform ListOfRooms;
-	[SerializeField] private GameObject RoomPrefab;
+    #region Переменные
+    string sqlLobbyFilter = "(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= 1000000)";
+	[SerializeField] GameObject SettingsWindow;
+	[SerializeField] GameObject SearchGameWindow;
+	[SerializeField] GameObject CreateGameWindow;
+	[SerializeField] GameObject RazSettings;
+	[SerializeField] GameObject DurakSettings;
+	[SerializeField] Text Bet;
+	[SerializeField] GameObject Cards;
+	[SerializeField] Text RoomName;
+	[SerializeField] Button CreateButton;
+	[SerializeField] Text MaxP;
+	[SerializeField] InputField NickName;
+	[SerializeField] GameObject SearchGames;
+	[SerializeField] GameObject SearchCards;
+	[SerializeField] Text SearchBetFrom;
+	[SerializeField] Text SearchBetTo;
+	[SerializeField] Transform ListOfRooms;
+	[SerializeField] GameObject RoomPrefab;
 	string currentSelection;
-	void Update()
+    #endregion
+    void Update()
 	{
 		if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))//выход из приложения свайпом вверх
 			Application.Quit();
@@ -51,6 +52,9 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	{
 		CreateButton.interactable = true;
 	}
+	/// <summary>
+	/// Создать комнату с выбранными параметрами
+	/// </summary>
 	public void Create()
 	{
 		if (NickName.text.Equals(""))//проверяем, что пользователь ввёл ник
@@ -140,6 +144,9 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		else if (currentSelection.Equals("Durak"))
 			DurakSettings.SetActive(true);
 	}
+	/// <summary>
+	/// Применить фильтр для поиска комнат
+	/// </summary>
 	public void ApplyFilter()
 	{
 		string selectedGames = "(", selectedCards = "(";

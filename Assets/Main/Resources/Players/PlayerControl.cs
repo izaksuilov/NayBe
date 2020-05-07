@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class PlayerControl : MonoBehaviour, IPunObservable
 {
-    private PhotonView photonView;
-    private SpriteRenderer spriteRenderer;
+    PhotonView photonView;
+    SpriteRenderer spriteRenderer;
     public int unAss { get; private set; } =  1;
     public List<GameObject> cards { get; set; }
     public List<GameObject> unAssCards = new List<GameObject>();
     public bool isPlayerTurn { get; set; } =  false;
 
-    private bool isRed;
+    bool isRed;
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)

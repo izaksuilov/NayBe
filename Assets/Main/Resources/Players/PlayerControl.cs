@@ -6,6 +6,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     PhotonView photonView;
     SpriteRenderer spriteRenderer;
     public int unAss { get; private set; }
+    public int localOffset { get; set; }
     public bool isPlayerTurn { get; set; } =  false;
     public string name1;
 
@@ -29,11 +30,8 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     {
         photonView = GetComponent<PhotonView>();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        //name1 = PhotonNetwork.PlayerList.Length;
         unAss = (int)PhotonNetwork.CurrentRoom.CustomProperties["C3"];
         FindObjectOfType<MapController>().AddPlayer(this);
-        Debug.Log(unAss);
-        Debug.Log(PhotonNetwork.PlayerList.Length);
     }
 
     // Update is called once per frame

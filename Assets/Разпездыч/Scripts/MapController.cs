@@ -59,7 +59,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
                     for (k = 0; k < players.Count - 1; k++)
                         players[k] = players[k + 1];
                     players[k] = first;
-                }
+                }for (int k = 0; k < players.Count; k++) players[k].localOffset = k;
                 goto outer;
             }
         }
@@ -92,20 +92,21 @@ public class MapController : MonoBehaviour, IOnEventCallback
             cards.Add(new Card(obj, int.Parse(name[0]), name[1]));
         }
         //положить каждому игроку соответствующее количество UnAss
-        int k = 0;
+        int k = 0, j = 0;
         List<GameObject> UnAssPositions =
             FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
-        foreach (var player in players)
+        for (int a = 0; a < players.Count; a++, k++)
         {
-            for (int i = 0; i < player.unAss; i++)
+            for (int i = 0; i < players[a].unAss; i++, j++)
             {
-                var card = cards[i].obj;
-                card.transform.SetParent(UnAssPositions[k].transform);
+                var card = cards[j].obj;
+                card.transform.SetParent(UnAssPositions[(k + )% (UnAssPositions.Count-1)].transform);
                 card.transform.localPosition = new Vector3(0, 0, 0);
                 card.transform.rotation = Quaternion.Euler(0, 0, 90);
                 card.transform.localScale = new Vector3(1, 1, 1);
-            }k++;
+            }
         }
+        //cards[0].obj.transform.SetParent(UnAssPositions[0].transform);
     }
     /// <summary>
     /// Убрать игрока из массива игроков

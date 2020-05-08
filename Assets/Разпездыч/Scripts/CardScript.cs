@@ -11,7 +11,8 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         try
         {
             transform.GetChild(0).GetChild(1).gameObject
-                .SetActive(transform.parent.GetComponent<DropPlaceScript>().Type != FieldType.OTHER);
+                //.SetActive(transform.parent.GetComponent<DropPlaceScript>().Type != FieldType.OTHER);
+                .SetActive(true);
         }
         catch { }
         

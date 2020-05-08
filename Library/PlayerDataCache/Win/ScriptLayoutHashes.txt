@@ -11,6 +11,7 @@ SceneListEnd?
 80d2851602cb4bcb6f559596c5eb955b PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.PlayerListCell
 71bb6a6b6c8f052f948db64c7dd3ca4f PhotonUnityNetworking.Utilities.dll:Photon.Pun.UtilityScripts.PunTeams
 71bb6a6b6c8f052f948db64c7dd3ca4f Assembly-CSharp.dll:.PLayerControlOffline
+71bb6a6b6c8f052f948db64c7dd3ca4f Assembly-CSharp.dll:.JoinRoomBtn
 74494c459d8da1b3c2f0349d1d8534aa PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.DocLinkButton
 ab039a385ef4459756519a3fe91dccc6 PhotonUnityNetworking.Utilities.dll:Photon.Pun.UtilityScripts.SmoothSyncMovement
 3c08375166df118bd1801438fc36b92f Unity.TextMeshPro.dll:TMPro.TMP_SelectionCaret
@@ -308,4 +309,3 @@ e4aa02db6487ad3aebb8e2f22ee6b699 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo
 c8283c7732e3b6aa70d28f1fed4430ca PhotonUnityNetworking.Utilities.dll:Photon.Pun.UtilityScripts.CountdownTimer
 491877540590e03bc0107ec60a521be4 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.Forms.UserIdUiForm
 c656dcc13ae391b68d594cc8f9c590b0 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.CountOfRoomsProperty
-71bb6a6b6c8f052f948db64c7dd3ca4f Assembly-CSharp.dll:.JoinRoomBtn

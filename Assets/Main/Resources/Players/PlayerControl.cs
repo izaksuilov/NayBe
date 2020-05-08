@@ -1,5 +1,4 @@
 ﻿using Photon.Pun;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerControl : MonoBehaviour, IPunObservable
@@ -8,6 +7,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     SpriteRenderer spriteRenderer;
     public int unAss { get; private set; }
     public bool isPlayerTurn { get; set; } =  false;
+    public string name1;
 
     bool isRed;
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
@@ -29,8 +29,11 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     {
         photonView = GetComponent<PhotonView>();
         spriteRenderer = GetComponent<SpriteRenderer>();
+        //name1 = PhotonNetwork.PlayerList.Length;
         unAss = (int)PhotonNetwork.CurrentRoom.CustomProperties["C3"];
         FindObjectOfType<MapController>().AddPlayer(this);
+        Debug.Log(unAss);
+        Debug.Log(PhotonNetwork.PlayerList.Length);
     }
 
     // Update is called once per frame

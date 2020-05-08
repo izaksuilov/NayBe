@@ -6,6 +6,16 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     Camera mainCamera;
     public Transform DefaultParent;
     bool isDraggable;
+    void Update()
+    {
+        try
+        {
+            transform.GetChild(0).GetChild(1).gameObject
+                .SetActive(transform.parent.GetComponent<DropPlaceScript>().Type != FieldType.OTHER);
+        }
+        catch { }
+        
+    }
     void Awake()
     {
         mainCamera = Camera.allCameras[0];

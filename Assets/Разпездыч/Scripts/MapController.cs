@@ -71,6 +71,11 @@ public class MapController : MonoBehaviour, IOnEventCallback
             players[i].transform.SetParent(PlayerPositions[players.Count - 1 - i].transform);
             players[i].transform.localPosition = new Vector3(0, 0, 0);
         }
+        if (players.Count == 1)
+        {
+            players[0].transform.SetParent(PlayerPositions[0].transform);
+            players[0].transform.localPosition = new Vector3(0, 0, 0);
+        }
     }
     /// <summary>
     /// Начать игру
@@ -81,8 +86,8 @@ public class MapController : MonoBehaviour, IOnEventCallback
         //создать нужное количество карт
         for (int i = 0; i < idx.Length; i++)
         {
-            GameObject obj = Instantiate(cardPrefab, new Vector3(0, 0, 0), Quaternion.identity);
-            obj.transform.GetChild(0).GetChild(0).GetComponent<Image>().sprite = cardsImage[idx[i]];
+            GameObject obj = Instantiate(cardPrefab);
+            obj.transform.GetChild(0).GetChild(1).GetComponent<Image>().sprite = cardsImage[idx[i]];
             string[] name = cardsImage[idx[i]].name.Split('_');
             cards.Add(new Card(obj, int.Parse(name[0]), name[1]));
         }

@@ -1,5 +1,6 @@
 ﻿using Photon.Pun;
 using Photon.Realtime;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,7 +10,7 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 {
     #region Переменные
-    string sqlLobbyFilter = "(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= 1000000)";
+    public string sqlLobbyFilter = "(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= 1000000)";
 	[SerializeField] GameObject SettingsWindow;
 	[SerializeField] GameObject SearchGameWindow;
 	[SerializeField] GameObject CreateGameWindow;
@@ -35,8 +36,6 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	{
 		if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))//выход из приложения свайпом вверх
 			Application.Quit();
-		if (SearchGameWindow.activeSelf)
-			PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
 	}
 	void Awake()
 	{
@@ -53,6 +52,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
     public override void OnConnectedToMaster()
 	{
 		CreateButton.interactable = true;
+		StartCoroutine(RefreshRoomList());
 	}
 	/// <summary>
 	/// Создать комнату с выбранными параметрами
@@ -81,13 +81,6 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		PhotonNetwork.CreateRoom(RoomName.text.Equals("") ? NickName.text : RoomName.text,
 								 roomOptions,
 								 new TypedLobby("myLobby", LobbyType.SqlLobby));
-	}
-	public void Join()
-	{
-		//TypedLobby sqlLobby = new TypedLobby("myLobby", LobbyType.SqlLobby);    // same as above
-		//string sqlLobbyFilter = "C0 = 0";   // find a game with mode 0
-		//lbClient.OpJoinRandomRoom(null, expectedMaxPlayers, matchmakingMode, sqlLobby, sqlLobbyFilter);
-		//PhotonNetwork.JoinRandomRoom();
 	}
 	public override void OnJoinedRoom()
 	{
@@ -168,5 +161,12 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 			if (obj.transform.GetChild(i).GetComponent<Toggle>().isOn)
 				s += $"{parameter} = \"{obj.transform.GetChild(i).name}\" OR ";
 		s = s.Remove(s.Length - 4) + ")";
+	}
+	IEnumerator RefreshRoomList()
+	{
+		if (SearchGameWindow.activeSelf)
+			PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
+		yield return new WaitForSeconds(2);
+		StartCoroutine(RefreshRoomList());
 	}
 }

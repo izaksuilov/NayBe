@@ -72,6 +72,7 @@
     <Compile Include="Assets\Main\Scripts\ContentScript.cs" />
     <Compile Include="Assets\Main\Scripts\HubManager.cs" />
     <Compile Include="Assets\Main\Scripts\ImageSelect.cs" />
+    <Compile Include="Assets\Main\Scripts\JoinRoomBtn.cs" />
     <Compile Include="Assets\Main\Scripts\NumberScript.cs" />
     <Compile Include="Assets\Main\Scripts\PlayerScript.cs" />
     <Compile Include="Assets\Main\Scripts\SearchSettings.cs" />

@@ -68,13 +68,8 @@ public class MapController : MonoBehaviour, IOnEventCallback
             FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "PlayerPosition");
         for (int i = 0; i < players.Count; i++)
         {
-            players[i].transform.SetParent(PlayerPositions[players.Count - 1 - i].transform);
+            players[i].transform.SetParent(PlayerPositions[i].transform);
             players[i].transform.localPosition = new Vector3(0, 0, 0);
-        }
-        if (players.Count == 1)
-        {
-            players[0].transform.SetParent(PlayerPositions[0].transform);
-            players[0].transform.localPosition = new Vector3(0, 0, 0);
         }
     }
     /// <summary>
@@ -92,7 +87,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             cards.Add(new Card(obj, int.Parse(name[0]), name[1]));
         }
         //положить каждому игроку соответствующее количество UnAss
-        int k = 0, j = 0;
+        int k = players[0].GetComponent<PhotonView>().OwnerActorNr-1, j = 0;
         List<GameObject> UnAssPositions =
             FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
         for (int a = 0; a < players.Count; a++, k++)
@@ -100,13 +95,12 @@ public class MapController : MonoBehaviour, IOnEventCallback
             for (int i = 0; i < players[a].unAss; i++, j++)
             {
                 var card = cards[j].obj;
-                card.transform.SetParent(UnAssPositions[(k + )% (UnAssPositions.Count-1)].transform);
+                card.transform.SetParent(UnAssPositions[k % UnAssPositions.Count].transform);
                 card.transform.localPosition = new Vector3(0, 0, 0);
                 card.transform.rotation = Quaternion.Euler(0, 0, 90);
                 card.transform.localScale = new Vector3(1, 1, 1);
             }
         }
-        //cards[0].obj.transform.SetParent(UnAssPositions[0].transform);
     }
     /// <summary>
     /// Убрать игрока из массива игроков
@@ -160,6 +154,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             if (child.tag == tag)
                 children.Add(child.gameObject);
         }
+        children.Reverse();
         return children;
     }
     #region События 

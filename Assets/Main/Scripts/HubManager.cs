@@ -31,13 +31,14 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	[SerializeField] Transform ListOfRooms;
 	[SerializeField] GameObject RoomPrefab;
 	string currentSelection;
+	int lastWidth = 0, lastHeight = 0;
     #endregion
     void Update()
 	{
 		if (Application.platform == RuntimePlatform.Android && Input.GetKeyDown(KeyCode.Escape))//выход из приложения свайпом вверх
 			Application.Quit();
-	}
-	void Awake()
+    }
+    void Awake()
 	{
 		CreateButton.interactable = false;
 		Settings.Load();
@@ -90,6 +91,9 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	{
 		
 	}
+	/// <summary>
+	/// Событие срабатывает, когда был послан запрос на обновление списка комнат
+	/// </summary>
 	public override void OnRoomListUpdate(List<RoomInfo> roomList)
 	{
 		foreach (Transform child in ListOfRooms.transform)
@@ -98,7 +102,6 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		{
 			for (int i = 0; i < roomList.Count; i++)
 			{
-				Instantiate(RoomPrefab, ListOfRooms);
 				RoomPrefab.transform.GetChild(0).GetChild(0).GetComponent<Text>().text = roomList[i].Name;
 				RoomPrefab.transform.GetChild(1).GetChild(0).GetChild(0).GetChild(1).GetChild(0).GetComponent<Text>().text 
 					= roomList[i].CustomProperties["C0"].ToString();
@@ -108,6 +111,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 					= roomList[i].CustomProperties["C2"].ToString();
 				RoomPrefab.transform.GetChild(1).GetChild(1).GetChild(1).GetChild(1).GetChild(0).GetComponent<Text>().text
 					= $"{roomList[i].PlayerCount} / {roomList[i].MaxPlayers}";
+				Instantiate(RoomPrefab, ListOfRooms);
 			}
 		}
 	}

@@ -7,7 +7,7 @@ TagManager:
   - Card
   - PlayerPosition
   - UnAssPosition
-  - CardsPosition
+  - HandPosition
   layers:
   - Default
   - TransparentFX

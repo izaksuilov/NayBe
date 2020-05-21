@@ -78,7 +78,7 @@ aa165095bcf0f4d99594ea33df01c81b UnityEngine.UI.dll:UnityEngine.UI.Slider
 0fd6822f6177297bd0eb4d83cc7a9030 UnityEngine.UI.dll:UnityEngine.UI.ToggleGroup
 abf1930d8126d0b2e00e9449129a0190 UnityEngine.UI.dll:UnityEngine.EventSystems.TouchInputModule
 64e54c0cbb0177c5ea26f340efb9ff85 UnityEngine.UI.dll:UnityEngine.UI.VerticalLayoutGroup
-d7c24cfb7bf98119da3d611c85b6b18c Assembly-CSharp.dll:.MapController
+90f2add352f7ec6ccb08777cd7abef51 Assembly-CSharp.dll:.MapController
 d3c76b14a25eebd3a3323dd43297919c Unity.TextMeshPro.dll:TMPro.TMP_InputField
 b1f26da3046d8b188758169a9d6b1078 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.SlotRacer.Utils.BezierSpline
 c656dcc13ae391b68d594cc8f9c590b0 PhotonUnityNetworking.Demos.dll:Photon.Pun.Demo.Cockpit.CountOfPlayersOnMasterProperty

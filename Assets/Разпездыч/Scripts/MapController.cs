@@ -21,6 +21,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] Sprite[] cardsImage;//лицевые стороны карт
     [SerializeField] GameObject cardPrefab;//префаб карты
+    [SerializeField] GameObject field;//поле
     [SerializeField] GameObject[] positions;//позиции, на которых распложены игроки и карты
     List<Card> cards = new List<Card>();
     List<PlayerControl> players = new List<PlayerControl>();
@@ -86,20 +87,23 @@ public class MapController : MonoBehaviour, IOnEventCallback
             string[] name = cardsImage[idx[i]].name.Split('_');
             cards.Add(new Card(obj, int.Parse(name[0]), name[1]));
         }
-        //положить каждому игроку соответствующее количество UnAss
-        int k = players[0].GetComponent<PhotonView>().OwnerActorNr-1, j = 0;
-        List<GameObject> UnAssPositions =
-            FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition");
-        for (int a = 0; a < players.Count; a++, k++)
+        //положить каждому игроку соответствующее количество UnAss и положить одну карту
+        int k = players[0].GetComponent<PhotonView>().OwnerActorNr-1, cardIndex = idx.Length-1;
+        List<GameObject> 
+            UnAssPositions = FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition"),
+            HandPositions = FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "HandPosition");
+
+        for (int a = 0; a < players.Count; a++, k++, cardIndex--)
         {
-            for (int i = 0; i < players[a].unAss; i++, j++)
-            {
-                var card = cards[j].obj;
-                card.transform.SetParent(UnAssPositions[k % UnAssPositions.Count].transform);
-                card.transform.localPosition = new Vector3(0, 0, 0);
-                card.transform.rotation = Quaternion.Euler(0, 0, 90);
-                card.transform.localScale = new Vector3(1, 1, 1);
-            }
+            for (int i = 0; i < players[a].unAss; i++, cardIndex--)
+                AttachCard(cards[cardIndex].obj, UnAssPositions[k % UnAssPositions.Count].transform, rotation: Quaternion.Euler(0, 0, 90));
+            AttachCard(cards[cardIndex].obj, HandPositions[k % HandPositions.Count].transform);
+        }
+        //оставшиеся карты положить в центр
+        while (cardIndex >= 0)
+        {
+            AttachCard(cards[cardIndex].obj, field.transform);
+            cardIndex--;
         }
     }
     /// <summary>
@@ -156,6 +160,13 @@ public class MapController : MonoBehaviour, IOnEventCallback
         }
         children.Reverse();
         return children;
+    }
+    private void AttachCard(GameObject card, Transform parent, Vector3 localPosition = default, Quaternion rotation = default)
+    {
+        card.transform.SetParent(parent);
+        card.transform.localPosition = localPosition;
+        card.transform.rotation = rotation;
+        card.transform.localScale = new Vector3(1,1,1);
     }
     #region События 
     public void OnEvent(EventData photonEvent)

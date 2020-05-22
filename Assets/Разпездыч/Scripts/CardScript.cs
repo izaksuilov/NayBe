@@ -28,7 +28,7 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (RazManager.isBeginningPhase)
             {
                 transform.GetChild(0).GetChild(1).gameObject
-                    .SetActive(transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND 
+                    .SetActive(transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND
                     || transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.ENEMY_HAND);
             }
         }
@@ -50,7 +50,7 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             isDraggable = (DefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND)
                           || (DefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD);
         if (!isDraggable) return;
-
+        transform.GetChild(0).GetChild(1).gameObject.SetActive(true);
         transform.GetChild(0).rotation = Quaternion.Euler(0, 0, 0);
         transform.SetParent(DefaultParent.parent.parent);
         GetComponent<CanvasGroup>().blocksRaycasts = false;
@@ -66,6 +66,10 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public void OnEndDrag(PointerEventData eventData)
     {
         if (!isDraggable) return;
+        if (RazManager.isBeginningPhase &&
+            DefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND &&
+            DefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.ENEMY_HAND)
+            DefaultParent = MapController.FindChildrenWithTag(DefaultParent.parent.parent.gameObject, "HandPosition")[0].transform;
         transform.SetParent(DefaultParent);
         transform.localScale = new Vector3(1, 1, 1);
         GetComponent<CanvasGroup>().blocksRaycasts = true;

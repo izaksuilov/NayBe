@@ -14,7 +14,7 @@ public class HandScript : MonoBehaviour
         if (currentChildCount == prevChildCont) return;
 
         prevChildCont = currentChildCount;
-        float rotation = currentChildCount == 2 ? 25 :(float)Math.Pow(500 * currentChildCount, 1 / 2f);
+        float rotation = currentChildCount == 2 ? 25 : (float)Math.Pow(228 * currentChildCount, 1 / 2f);
 
         for (int i = 0; i < currentChildCount; i++)
             GetComponent<HorizontalLayoutGroup>().transform.GetChild(i)

@@ -98,7 +98,6 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
         }
         //оставшиеся карты положить в центр
-        field.GetComponent<HorizontalLayoutGroup>().enabled = false;
         while (cardIndex >= 0)
         {
             AttachCard(allCards[cardIndex].Obj, field.transform);
@@ -150,7 +149,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// <param name="parent">Объект, в котором нужно искать</param>
     /// <param name="tag">Тег объекта-ребенка</param>
     /// <returns>Возвращает List объектов-детей</returns>
-    private List<GameObject> FindChildrenWithTag(GameObject parent, string tag)
+    public static List<GameObject> FindChildrenWithTag(GameObject parent, string tag)
     {
         List<GameObject> children = new List<GameObject>();
         foreach (Transform child in parent.GetComponentsInChildren<Transform>())

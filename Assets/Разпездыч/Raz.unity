@@ -142,10 +142,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardsImage:
-  - {fileID: 21300000, guid: b610559738ade54429cdcd3d786ee948, type: 3}
-  - {fileID: 21300000, guid: a4f4e1cd92fd4fe448c6b97eb5ead7f2, type: 3}
-  - {fileID: 21300000, guid: ed2f05a4a781d6344ad13894a1e30db9, type: 3}
-  - {fileID: 21300000, guid: d2cf494399648c843be98b47751ea46c, type: 3}
   - {fileID: 21300000, guid: c3869641006381942969c6b21abbdad4, type: 3}
   - {fileID: 21300000, guid: 8698b503330395149878c225e8b7fd68, type: 3}
   - {fileID: 21300000, guid: 68d90b8476be19b448fe37aa3b13fabd, type: 3}
@@ -194,6 +190,10 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 4707924cf373ee649a24181539b379c7, type: 3}
   - {fileID: 21300000, guid: 379778dfd2d378f45812e3e322b6b949, type: 3}
   - {fileID: 21300000, guid: 732ef3e15087f194c89c48bde4d50e70, type: 3}
+  - {fileID: 21300000, guid: b610559738ade54429cdcd3d786ee948, type: 3}
+  - {fileID: 21300000, guid: a4f4e1cd92fd4fe448c6b97eb5ead7f2, type: 3}
+  - {fileID: 21300000, guid: ed2f05a4a781d6344ad13894a1e30db9, type: 3}
+  - {fileID: 21300000, guid: d2cf494399648c843be98b47751ea46c, type: 3}
   cardPrefab: {fileID: 7006867953998499081, guid: edd0abebb519f82498896de6a1f64431,
     type: 3}
   field: {fileID: 1168639468}
@@ -405,7 +405,7 @@ RectTransform:
   m_GameObject: {fileID: 497140328}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: -1, y: -1, z: 1}
   m_Children: []
   m_Father: {fileID: 1476848997}
   m_RootOrder: 2
@@ -529,7 +529,7 @@ Camera:
   far clip plane: 1000
   field of view: 26.991467
   orthographic: 1
-  orthographic size: 318
+  orthographic size: 315
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

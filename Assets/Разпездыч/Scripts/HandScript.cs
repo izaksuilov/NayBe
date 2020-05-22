@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class HandScript : MonoBehaviour
 {
+    //скрипт, который раскладывает карты в руке
     int prevChildCont = 0;
     void Update()
     {

@@ -5,26 +5,18 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 using UnityEngine.UI;
 
-public struct Card
-{
-    public GameObject obj;
-    public int value;
-    public string suit;
-    public Card(GameObject _obj, int _value, string _suit)
-    {
-        obj = _obj;
-        value = _value;
-        suit = _suit;
-    }
-}
 public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] Sprite[] cardsImage;//лицевые стороны карт
     [SerializeField] GameObject cardPrefab;//префаб карты
     [SerializeField] GameObject field;//поле
     [SerializeField] GameObject[] positions;//позиции, на которых распложены игроки и карты
-    List<Card> cards = new List<Card>();
     List<PlayerControl> players = new List<PlayerControl>();
+    public static List<Card> allCards;
+    private void Awake()
+    {
+        allCards = new List<Card>();
+    }
     /// <summary>
     /// Добавить игрока в массив игроков
     /// </summary>
@@ -46,7 +38,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// </summary>
     private void ArrangePlayers()
     {
-        players.Sort(new PlayerComparer());//сортируем игроков, в в обратном порядке очереди
+        players.Sort(new PlayerComparer());//сортируем игроков, в обратном порядке очереди
                                            //(так игроки будут ходить по часовой стрелке)
                                            //и ставим нашего игрока первым в массиве
         for (int i = 0; i < players.Count; i++)
@@ -85,26 +77,34 @@ public class MapController : MonoBehaviour, IOnEventCallback
             GameObject obj = Instantiate(cardPrefab);
             obj.transform.GetChild(0).GetChild(1).GetComponent<Image>().sprite = cardsImage[idx[i]];
             string[] name = cardsImage[idx[i]].name.Split('_');
-            cards.Add(new Card(obj, int.Parse(name[0]), name[1]));
+            obj.GetComponent<CardScript>().CreateCard(new Card(obj, int.Parse(name[0]), name[1]));
         }
         //положить каждому игроку соответствующее количество UnAss и положить одну карту
         int k = players[0].GetComponent<PhotonView>().OwnerActorNr-1, cardIndex = idx.Length-1;
         List<GameObject> 
             UnAssPositions = FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition"),
             HandPositions = FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "HandPosition");
-
+        int maxCard = -1, maxCardIndex = -1;
         for (int a = 0; a < players.Count; a++, k++, cardIndex--)
         {
-            for (int i = 0; i < players[a].unAss; i++, cardIndex--)
-                AttachCard(cards[cardIndex].obj, UnAssPositions[k % UnAssPositions.Count].transform, rotation: Quaternion.Euler(0, 0, 90));
-            AttachCard(cards[cardIndex].obj, HandPositions[k % HandPositions.Count].transform);
+            for (int i = 0; i < players[a].unAss; i++, cardIndex--) //unass
+                AttachCard(allCards[cardIndex].Obj, UnAssPositions[k % UnAssPositions.Count].transform, rotation: Quaternion.Euler(0, 0, 90));
+            AttachCard(allCards[cardIndex].Obj, HandPositions[k % HandPositions.Count].transform);//карта
+            //находим самую большую карту, игрок с этой картой начнёт ходить
+            if (allCards[cardIndex].Value > maxCard)
+            {
+                maxCard = allCards[cardIndex].Value;
+                maxCardIndex = a;
+            }
         }
         //оставшиеся карты положить в центр
+        field.GetComponent<HorizontalLayoutGroup>().enabled = false;
         while (cardIndex >= 0)
         {
-            AttachCard(cards[cardIndex].obj, field.transform);
+            AttachCard(allCards[cardIndex].Obj, field.transform);
             cardIndex--;
         }
+        players[maxCardIndex].isPlayerTurn = true;
     }
     /// <summary>
     /// Убрать игрока из массива игроков
@@ -134,7 +134,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         List<int> list = new List<int>();
         //создаем псевдорандомный массив неповторяющихся чисел
         int[] idx = new int[countOfCards];
-        for (int i = 51; i >= 51 - countOfCards; i--)
+        for (int i = 51; i > 51 - countOfCards; i--)
             list.Add(i);
         for (int i = 0; i < countOfCards; i++)
         {

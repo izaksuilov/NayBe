@@ -11,23 +11,16 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 {
     #region Переменные
     public string sqlLobbyFilter = "(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= 1000000)";
-	[SerializeField] GameObject SettingsWindow;
-	[SerializeField] GameObject SearchGameWindow;
-	[SerializeField] GameObject CreateGameWindow;
-	[SerializeField] GameObject RazSettings;
-	[SerializeField] GameObject DurakSettings;
+	[SerializeField] GameObject SettingsWindow, SearchGameWindow, CreateGameWindow, RazSettings, DurakSettings;
+	[SerializeField] Toggle SearchWindowButton;
 	[SerializeField] Text Bet;
 	[SerializeField] GameObject Cards;
-	[SerializeField] Text UnAss;
-	[SerializeField] Text UnAff;
-	[SerializeField] Text RoomName;
+	[SerializeField] Text UnAss, UnAff, RoomName;
 	[SerializeField] Button CreateButton;
 	[SerializeField] Text MaxP;
 	[SerializeField] InputField NickName;
-	[SerializeField] GameObject SearchGames;
-	[SerializeField] GameObject SearchCards;
-	[SerializeField] Text SearchBetFrom;
-	[SerializeField] Text SearchBetTo;
+	[SerializeField] GameObject SearchGames, SearchCards;
+	[SerializeField] Text SearchBetFrom, SearchBetTo;
 	[SerializeField] Transform ListOfRooms;
 	[SerializeField] GameObject RoomPrefab;
 	string currentSelection;
@@ -40,7 +33,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
     }
     void Awake()
 	{
-		CreateButton.interactable = false;
+		SearchWindowButton.interactable = CreateButton.interactable = false;
 		Settings.Load();
 		#region Network
 		PhotonNetwork.NickName = NickName.text;
@@ -52,8 +45,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	}
     public override void OnConnectedToMaster()
 	{
-		CreateButton.interactable = true;
-		StartCoroutine(RefreshRoomList());
+		SearchWindowButton.interactable = CreateButton.interactable = true;
 	}
 	/// <summary>
 	/// Создать комнату с выбранными параметрами
@@ -125,11 +117,16 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	/// <param name="window">Название окна</param>
 	public void SelectWindow(string window)
 	{
+		StopCoroutine(RefreshRoomList());
 		SettingsWindow.SetActive(false); SearchGameWindow.SetActive(false); CreateGameWindow.SetActive(false);
+
 		if (window.Equals("Settings"))
 			SettingsWindow.SetActive(true);
 		else if (window.Equals("Search"))
+		{
 			SearchGameWindow.SetActive(true);
+			StartCoroutine(RefreshRoomList());
+		}
 		else if (window.Equals("Create"))
 			CreateGameWindow.SetActive(true);
 	}
@@ -168,9 +165,8 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	}
 	IEnumerator RefreshRoomList()
 	{
-		if (SearchGameWindow.activeSelf)
-			PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
-		yield return new WaitForSeconds(2);
+		PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
+		yield return new WaitForSeconds(1);
 		StartCoroutine(RefreshRoomList());
 	}
 }

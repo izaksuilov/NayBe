@@ -1314,6 +1314,7 @@ MonoBehaviour:
   CreateGameWindow: {fileID: 769670909}
   RazSettings: {fileID: 2091937205}
   DurakSettings: {fileID: 1071024906}
+  SearchWindowButton: {fileID: 1742478177}
   Bet: {fileID: 2020313588}
   Cards: {fileID: 1125658959}
   UnAss: {fileID: 2019510345}
@@ -13940,10 +13941,10 @@ MonoBehaviour:
   m_FillRect: {fileID: 2083698411}
   m_HandleRect: {fileID: 1044467958}
   m_Direction: 0
-  m_MinValue: 1
+  m_MinValue: 2
   m_MaxValue: 8
   m_WholeNumbers: 1
-  m_Value: 1
+  m_Value: 2
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:

@@ -5,7 +5,8 @@ using UnityEngine;
 public enum Events : byte
 {
     StartGame = 1,
-    EndGame
+    PlayerLeftRoom,
+    SwitchPlayerTurn
 }
 public static class Settings
 {

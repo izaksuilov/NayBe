@@ -17,23 +17,12 @@ public class DropPlaceScript : MonoBehaviour, IDropHandler
         CardScript card = eventData.pointerDrag.GetComponent<CardScript>();
         if (RazManager.isBeginningPhase)
         {
-            if (Type == FieldType.ENEMY_HAND)
+            int currentCard = card.thisCard.Value, lastCard = transform.GetChild(transform.childCount - 1).GetComponent<CardScript>().thisCard.Value;
+            if (Type == FieldType.ENEMY_HAND || Type == FieldType.MY_HAND)
             {
-                int c1 = card.thisCard.Value, c2 = transform.GetChild(transform.childCount - 1).GetComponent<CardScript>().thisCard.Value;
-                if (c1 - c2 != 1) return;
-                if (c2 == 14)
-                {
-                    int minCard = 0;
-                    switch(MapController.allCards.Count)
-                    {
-                        case 24: minCard = 9; break;
-                        case 36: minCard = 6; break;
-                        case 52: minCard = 2; break;
-                    }//!!
-                    if (c1 != minCard) return;
-                }
+                if (lastCard == 14 && currentCard != MapController.minCard) return;
+                else if (currentCard - lastCard != 1) return;
             }
-            else if (Type != FieldType.MY_HAND) return;
         }
         if (card)
             card.DefaultParent = transform;

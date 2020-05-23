@@ -138,6 +138,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   name1: 
+  isRed: 0
 --- !u!114 &2109141768613446428
 MonoBehaviour:
   m_ObjectHideFlags: 0

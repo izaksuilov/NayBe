@@ -1,4 +1,5 @@
-﻿using Photon.Pun;
+﻿using ExitGames.Client.Photon;
+using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -27,7 +28,7 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     }
     public void Leave()
     {
-        MapController.RemovePlayer();
+        PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
         PhotonNetwork.LeaveRoom();
     }
 

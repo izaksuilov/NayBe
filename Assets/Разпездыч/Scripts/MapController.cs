@@ -8,13 +8,15 @@ using UnityEngine.UI;
 public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] Sprite[] cardsImage;//лицевые стороны карт
-    [SerializeField] GameObject cardPrefab;//префаб карты
-    [SerializeField] GameObject field;//поле
-    [SerializeField] GameObject[] positions;//позиции, на которых распложены игроки и карты
-    List<PlayerControl> players = new List<PlayerControl>();
+    [SerializeField] GameObject cardPrefab, field, positions, otherPlayer;
+    public static List<PlayerControl> players { get; private set; }
     public static List<Card> allCards;
+    public static int minCard { get; private set; } = 0;
     private void Awake()
     {
+        for (int i = 0; i < PhotonNetwork.CurrentRoom.MaxPlayers - 2; i++)
+            Instantiate(otherPlayer, otherPlayer.transform.parent);//cоздать нужное количество мест для игроков
+        players = new List<PlayerControl>();
         allCards = new List<Card>();
     }
     /// <summary>
@@ -39,10 +41,11 @@ public class MapController : MonoBehaviour, IOnEventCallback
     private void ArrangePlayers()
     {
         players.Sort(new PlayerComparer());//сортируем игроков, в обратном порядке очереди
-                                           //(так игроки будут ходить по часовой стрелке)
-                                           //и ставим нашего игрока первым в массиве
+                                         //(так игроки будут ходить по часовой стрелке)
+                                         //и ставим нашего игрока первым в массиве
         for (int i = 0; i < players.Count; i++)
         {
+            players[i].roomPosition = players.Count - 1 - i;
             if (players[i].GetComponent<PhotonView>().IsMine)
             {
                 for (int j = i; j > 0; j--)
@@ -52,13 +55,13 @@ public class MapController : MonoBehaviour, IOnEventCallback
                     for (k = 0; k < players.Count - 1; k++)
                         players[k] = players[k + 1];
                     players[k] = first;
-                }for (int k = 0; k < players.Count; k++) players[k].localOffset = k;
+                }
                 goto outer;
             }
         }
-    outer:
-        List<GameObject> PlayerPositions = 
-            FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "PlayerPosition");
+        outer:
+        List<GameObject> PlayerPositions =
+            FindChildrenWithTag(positions, "PlayerPosition");
         for (int i = 0; i < players.Count; i++)
         {
             players[i].transform.SetParent(PlayerPositions[i].transform);
@@ -79,18 +82,24 @@ public class MapController : MonoBehaviour, IOnEventCallback
             string[] name = cardsImage[idx[i]].name.Split('_');
             obj.GetComponent<CardScript>().CreateCard(new Card(obj, int.Parse(name[0]), name[1]));
         }
+        switch (allCards.Count)
+        {
+            case 24: minCard = 9; break;
+            case 36: minCard = 6; break;
+            case 52: minCard = 2; break;
+        }
         //положить каждому игроку соответствующее количество UnAss и положить одну карту
-        int k = players[0].GetComponent<PhotonView>().OwnerActorNr-1, cardIndex = idx.Length-1;
-        List<GameObject> 
-            UnAssPositions = FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "UnAssPosition"),
-            HandPositions = FindChildrenWithTag(positions[players.Count == 1 ? 0 : players.Count - 2], "HandPosition");
+        int k = players[0].roomPosition, cardIndex = idx.Length - 1;
+        List<GameObject>
+            UnAssPositions = FindChildrenWithTag(positions, "UnAssPosition"),
+            HandPositions = FindChildrenWithTag(positions, "HandPosition");
         int maxCard = -1, maxCardIndex = -1;
         for (int a = 0; a < players.Count; a++, k++, cardIndex--)
         {
             for (int i = 0; i < players[a].unAss; i++, cardIndex--) //unass
                 AttachCard(allCards[cardIndex].Obj, UnAssPositions[k % UnAssPositions.Count].transform, rotation: Quaternion.Euler(0, 0, 90));
             AttachCard(allCards[cardIndex].Obj, HandPositions[k % HandPositions.Count].transform);//карта
-            //находим самую большую карту, игрок с этой картой начнёт ходить
+            //находим самую большую карту
             if (allCards[cardIndex].Value > maxCard)
             {
                 maxCard = allCards[cardIndex].Value;
@@ -102,8 +111,15 @@ public class MapController : MonoBehaviour, IOnEventCallback
         {
             AttachCard(allCards[cardIndex].Obj, field.transform);
             cardIndex--;
+        }// игрок с наибольшей картой начнёт ходить
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].GetComponent<PhotonView>().OwnerActorNr == maxCardIndex+1)
+            {
+                players[i].isPlayerTurn = true;
+                break;
+            }
         }
-        players[maxCardIndex].isPlayerTurn = true;
     }
     /// <summary>
     /// Убрать игрока из массива игроков
@@ -123,6 +139,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         //удаляем все карты
         foreach (GameObject item in GameObject.FindGameObjectsWithTag("Card"))
             Destroy(item);
+        allCards.Clear();
     }
     /// <summary>
     /// Создать псевдорандомные индексы для карт
@@ -144,6 +161,56 @@ public class MapController : MonoBehaviour, IOnEventCallback
         return idx;
     }
     /// <summary>
+    /// Присоединить карту к объекту-родителю
+    /// </summary>
+    private void AttachCard(GameObject card, Transform parent, Vector3 localPosition = default, Quaternion rotation = default)
+    {
+        card.transform.SetParent(parent);
+        card.transform.localPosition = localPosition;
+        card.transform.rotation = rotation;
+        card.transform.localScale = new Vector3(1, 1, 1);
+    }
+    public static void SwitchPlayerTurn()
+    {
+        players[0].isPlayerTurn = false;
+        PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, players[1].GetComponent<PhotonView>().OwnerActorNr,
+            new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+    }
+    #region События 
+    public void OnEvent(EventData photonEvent)
+    {
+        switch (photonEvent.Code)
+        {
+            case (byte)Events.StartGame:
+            {
+                int[] data = (int[])photonEvent.CustomData;
+                StartGame(data); break;
+            }
+            case (byte)Events.PlayerLeftRoom:
+            {
+                RemovePlayer(); break;
+            }
+            case (byte)Events.SwitchPlayerTurn:
+            {
+                int data = (int)photonEvent.CustomData;
+                for (int i = 0; i < players.Count; i++)
+                {
+                    if(players[i].GetComponent<PhotonView>().OwnerActorNr == data) players[i].isPlayerTurn = true;
+                    break;
+                }break;
+            }
+        }
+    }
+    private void OnEnable()
+    {
+        PhotonNetwork.AddCallbackTarget(this);
+    }
+    private void OnDisable()
+    {
+        PhotonNetwork.RemoveCallbackTarget(this);
+    }
+    #endregion
+    /// <summary>
     /// Находит объект-ребенок в объекте-родителе по тегу
     /// </summary>
     /// <param name="parent">Объект, в котором нужно искать</param>
@@ -160,38 +227,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         children.Reverse();
         return children;
     }
-    private void AttachCard(GameObject card, Transform parent, Vector3 localPosition = default, Quaternion rotation = default)
-    {
-        card.transform.SetParent(parent);
-        card.transform.localPosition = localPosition;
-        card.transform.rotation = rotation;
-        card.transform.localScale = new Vector3(1,1,1);
-    }
-    #region События 
-    public void OnEvent(EventData photonEvent)
-    {
-        switch (photonEvent.Code)
-        {
-            case (byte)Events.StartGame:
-            {
-                int[] data = (int[])photonEvent.CustomData;
-                StartGame(data); break;
-            }
-        }
-    }
-    private void OnEnable()
-    {
-        PhotonNetwork.AddCallbackTarget(this);
-    }
-    private void OnDisable()
-    {
-        PhotonNetwork.RemoveCallbackTarget(this);
-    }
-    #endregion
 }
-/// <summary>
-/// Сортировка игроков
-/// </summary>
 class PlayerComparer : IComparer<PlayerControl>
 {
     public int Compare(PlayerControl p1, PlayerControl p2)
@@ -202,4 +238,5 @@ class PlayerComparer : IComparer<PlayerControl>
             return 1;
         return 0;
     }
+
 }

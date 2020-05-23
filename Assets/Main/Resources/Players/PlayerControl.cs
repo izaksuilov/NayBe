@@ -5,24 +5,21 @@ public class PlayerControl : MonoBehaviour, IPunObservable
 {
     PhotonView photonView;
     SpriteRenderer spriteRenderer;
-    public int unAss { get; private set; }
-    public int localOffset { get; set; }
+    public int unAss { get; set; }
+    public int roomPosition { get; set; }
     public bool isPlayerTurn { get; set; } =  false;
     public string name1;
-
-    bool isRed;
+    public bool isRed = false;
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        if (stream.IsWriting)
-        {
-            stream.SendNext(isRed);
-            stream.SendNext(unAss);
-        }
-        else
-        {
-            isRed = (bool) stream.ReceiveNext();
-            unAss = (int) stream.ReceiveNext();
-        }
+        //if (stream.IsWriting)
+        //{
+        //    stream.SendNext(isPlayerTurn);
+        //}
+        //else
+        //{
+        //    isPlayerTurn = (bool) stream.ReceiveNext();
+        //}
     }
 
     // Start is called before the first frame update
@@ -37,15 +34,15 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     // Update is called once per frame
     void Update()
     {
-        if (photonView.IsMine && PhotonNetwork.IsConnected == true) // пользовательский ввод
-        {
-            if (Input.GetKey(KeyCode.Space))
-                isRed = true;
-            else isRed = false;
-        }
-        if (isRed)
-            spriteRenderer.color = Color.red;
-        else
-            spriteRenderer.color = Color.white;
+        //if (photonView.IsMine && PhotonNetwork.IsConnected) // пользовательский ввод
+        //{
+        //    if (Input.GetKey(KeyCode.Space))
+        //        isRed = true;
+        //    else isRed = false;
+        //}
+        //if (isRed)
+        //    spriteRenderer.color = Color.red;
+        //else
+        //    spriteRenderer.color = Color.white;
     }
 }

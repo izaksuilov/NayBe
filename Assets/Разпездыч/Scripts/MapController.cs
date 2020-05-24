@@ -176,6 +176,11 @@ public class MapController : MonoBehaviour, IOnEventCallback
         PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, players[1].GetComponent<PhotonView>().OwnerActorNr,
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
+    //public static void MoveCard(int value, int suit, int typeField)
+    //{
+    //    PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, ,
+    //        new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+    //}
     #region События 
     public void OnEvent(EventData photonEvent)
     {
@@ -198,6 +203,11 @@ public class MapController : MonoBehaviour, IOnEventCallback
                     if(players[i].GetComponent<PhotonView>().OwnerActorNr == data) players[i].isPlayerTurn = true;
                     break;
                 }break;
+            }
+            case (byte)Events.MoveCard:
+            {
+                int[] data = (int[])photonEvent.CustomData;
+                StartGame(data); break;
             }
         }
     }

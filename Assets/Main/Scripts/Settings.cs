@@ -6,7 +6,8 @@ public enum Events : byte
 {
     StartGame = 1,
     PlayerLeftRoom,
-    SwitchPlayerTurn
+    SwitchPlayerTurn,
+    MoveCard
 }
 public static class Settings
 {

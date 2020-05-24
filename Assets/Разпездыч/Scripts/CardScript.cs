@@ -75,16 +75,18 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (parentType != FieldType.MY_HAND && parentType != FieldType.ENEMY_HAND)
             {
                 DefaultParent = MapController.FindChildrenWithTag(DefaultParent.parent.parent.gameObject, "HandPosition")[0].transform;
-                parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;
+                parentType = FieldType.MY_HAND;
             }
-            int currentCard = thisCard.Value, lastCard = DefaultParent.transform.GetChild(DefaultParent.childCount - 1).GetComponent<CardScript>().thisCard.Value;
+            int currentCard = thisCard.Value, 
+                lastCard = DefaultParent.childCount != 0 ? DefaultParent.transform.GetChild(DefaultParent.childCount - 1).GetComponent<CardScript>().thisCard.Value : -1;
             if (parentType == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND && // если положил в свою руку не из своей руки
-                (currentCard - lastCard != 1 || (lastCard == 14 && currentCard != MapController.minCard))) //если карта не идёт по иерархии
-                    MapController.SwitchPlayerTurn();
+                (lastCard != -1 && // и если в руке были карты
+                ((lastCard == 14 && currentCard != MapController.minCard) || (lastCard != 14 && (currentCard - lastCard != 1)))))// и если карта не идёт по иерархии
+                    MapController.SwitchPlayerTurn();// то передать ход
         }
-
         transform.SetParent(DefaultParent);
         transform.localScale = new Vector3(1, 1, 1);
+        //MapController.MoveCard();
         GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 }

@@ -6,7 +6,6 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     PhotonView photonView;
     SpriteRenderer spriteRenderer;
     public int unAss { get; set; }
-    public int roomPosition { get; set; }
     public bool isPlayerTurn { get; set; } =  false;
     public string name1;
     public bool isRed = false;

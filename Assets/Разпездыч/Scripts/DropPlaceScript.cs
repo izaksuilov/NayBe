@@ -14,10 +14,11 @@ public class DropPlaceScript : MonoBehaviour, IDropHandler
     public void OnDrop(PointerEventData eventData)
     {
         //if (!RazManager.isBeginningPhase && (Type == FieldType.ENEMY_HAND || Type == FieldType.UNASS)) return;
+        int currentCard, lastCard;
         CardScript card = eventData.pointerDrag.GetComponent<CardScript>();
         if (RazManager.isBeginningPhase)//если раздём карты, то нужно проверить, как мы их положили
         {
-            int currentCard = card.thisCard.Value, lastCard = transform.GetChild(transform.childCount - 1).GetComponent<CardScript>().thisCard.Value;
+            currentCard = card.thisCard.Value; lastCard = transform.GetChild(transform.childCount - 1).GetComponent<CardScript>().thisCard.Value;
             if (Type == FieldType.ENEMY_HAND || Type == FieldType.MY_HAND)
             {
                 if (lastCard == 14)

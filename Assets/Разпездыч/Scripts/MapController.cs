@@ -4,6 +4,7 @@ using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
 using UnityEngine.UI;
+using System;
 
 public class MapController : MonoBehaviour, IOnEventCallback
 {
@@ -27,13 +28,14 @@ public class MapController : MonoBehaviour, IOnEventCallback
     {
         players.Add(player);//когда добавляется игрок, нужно переместить всех игроков в зависимости от их количества
         ArrangePlayers();
-        //если комната полная
-        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)
+        PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
         {
-            int[] data = CreateRandomIds();//генерируем рандомные числа, отвечающие за лицевые стороны карт
+            int[] data = CreateRandomIds();
             PhotonNetwork.RaiseEvent((byte)Events.StartGame, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
-            StartGame(data);//отправляем событие и начинаем игру
+            StartGame(data);
         }
+        
     }
     /// <summary>
     /// Расставить игроков по местам
@@ -41,25 +43,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
     private void ArrangePlayers()
     {
         players.Sort(new PlayerComparer());//сортируем игроков, в обратном порядке очереди
-                                         //(так игроки будут ходить по часовой стрелке)
-                                         //и ставим нашего игрока первым в массиве
-        for (int i = 0; i < players.Count; i++)
-        {
-            players[i].roomPosition = players.Count - 1 - i;
-            if (players[i].GetComponent<PhotonView>().IsMine)
-            {
-                for (int j = i; j > 0; j--)
-                {
-                    var first = players[0];
-                    int k;
-                    for (k = 0; k < players.Count - 1; k++)
-                        players[k] = players[k + 1];
-                    players[k] = first;
-                }
-                goto outer;
-            }
-        }
-        outer:
+                                           //(так игроки будут ходить по часовой стрелке)
+                                           //и ставим нашего игрока первым в массиве
+        players =  PlayerComparer.PutMyPlayerFirst(players);
         List<GameObject> PlayerPositions =
             FindChildrenWithTag(positions, "PlayerPosition");
         for (int i = 0; i < players.Count; i++)
@@ -89,21 +75,18 @@ public class MapController : MonoBehaviour, IOnEventCallback
             case 52: minCard = 2; break;
         }
         //положить каждому игроку соответствующее количество UnAss и положить одну карту
-        int k = players[0].roomPosition, cardIndex = idx.Length - 1;
-        List<GameObject>
-            UnAssPositions = FindChildrenWithTag(positions, "UnAssPosition"),
-            HandPositions = FindChildrenWithTag(positions, "HandPosition");
-        int maxCard = -1, maxCardIndex = -1;
-        for (int a = 0; a < players.Count; a++, k++, cardIndex--)
+        players.Sort(new PlayerComparer());
+        int cardIndex = idx.Length - 1, maxCard = -1, beginnerPlayer = -1;
+        for (int a = 0; a < players.Count; a++, cardIndex--)
         {
+            GameObject playerParent = players[a].transform.parent.parent.parent.gameObject;
             for (int i = 0; i < players[a].unAss; i++, cardIndex--) //unass
-                AttachCard(allCards[cardIndex].Obj, UnAssPositions[k % UnAssPositions.Count].transform, rotation: Quaternion.Euler(0, 0, 90));
-            AttachCard(allCards[cardIndex].Obj, HandPositions[k % HandPositions.Count].transform);//карта
-            //находим самую большую карту
-            if (allCards[cardIndex].Value > maxCard)
+                AttachCard(allCards[cardIndex].Obj, FindChildrenWithTag(playerParent, "UnAssPosition")[0].transform, rotation: Quaternion.Euler(0, 0, 90));
+            AttachCard(allCards[cardIndex].Obj, FindChildrenWithTag(playerParent, "HandPosition")[0].transform);//карта
+            if (allCards[cardIndex].Value > maxCard)//находим самую большую карту
             {
                 maxCard = allCards[cardIndex].Value;
-                maxCardIndex = a;
+                beginnerPlayer = players[a].GetComponent<PhotonView>().OwnerActorNr;
             }
         }
         //оставшиеся карты положить в центр
@@ -112,14 +95,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
             AttachCard(allCards[cardIndex].Obj, field.transform);
             cardIndex--;
         }// игрок с наибольшей картой начнёт ходить
-        for (int i = 0; i < players.Count; i++)
-        {
-            if (players[i].GetComponent<PhotonView>().OwnerActorNr == maxCardIndex+1)
-            {
-                players[i].isPlayerTurn = true;
-                break;
-            }
-        }
+        players = PlayerComparer.PutMyPlayerFirst(players);
+        if (players[0].GetComponent<PhotonView>().OwnerActorNr == beginnerPlayer) players[0].isPlayerTurn = true;
+
     }
     /// <summary>
     /// Убрать игрока из массива игроков
@@ -128,8 +106,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     {
         players.RemoveAt(players.Count - 1);
         EndGame();
-        if (players.Count > 0)
-            ArrangePlayers();
+        ArrangePlayers();
     }
     /// <summary>
     /// Закончить игру
@@ -137,7 +114,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     private void EndGame()
     {
         //удаляем все карты
-        foreach (GameObject item in GameObject.FindGameObjectsWithTag("Card"))
+        foreach (GameObject item in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card"))
             Destroy(item);
         allCards.Clear();
     }
@@ -172,8 +149,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
     }
     public static void SwitchPlayerTurn()
     {
-        players[0].isPlayerTurn = false;
-        PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, players[1].GetComponent<PhotonView>().OwnerActorNr,
+        //players[0].isPlayerTurn = false;
+        Debug.LogError("check it");
+        PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, players[players.Count-1].GetComponent<PhotonView>().OwnerActorNr,
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
     //public static void MoveCard(int value, int suit, int typeField)
@@ -190,6 +168,10 @@ public class MapController : MonoBehaviour, IOnEventCallback
             {
                 int[] data = (int[])photonEvent.CustomData;
                 StartGame(data); break;
+            }
+            case (byte)Events.ArrangePlayers:
+            {
+                ArrangePlayers(); break;
             }
             case (byte)Events.PlayerLeftRoom:
             {
@@ -237,6 +219,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         children.Reverse();
         return children;
     }
+    
 }
 class PlayerComparer : IComparer<PlayerControl>
 {
@@ -248,5 +231,23 @@ class PlayerComparer : IComparer<PlayerControl>
             return 1;
         return 0;
     }
-
+    public static List<PlayerControl> PutMyPlayerFirst(List<PlayerControl> players)
+    {
+        for (int i = 0; i < players.Count; i++)
+        {
+            if (players[i].GetComponent<PhotonView>().IsMine)
+            {
+                for (int j = i; j > 0; j--)
+                {
+                    var first = players[0];
+                    int k;
+                    for (k = 0; k < players.Count - 1; k++)
+                        players[k] = players[k + 1];
+                    players[k] = first;
+                }
+                return players;
+            }
+        }
+        return players;
+    }
 }

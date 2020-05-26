@@ -4,11 +4,13 @@ using UnityEngine;
 
 public enum Events : byte
 {
-    StartGame = 1,
-    PlayerLeftRoom,
+    StartFirstPhase = 1,
+    StartSecondPhase,
+    ArrangePlayers,
     SwitchPlayerTurn,
     MoveCard,
-    ArrangePlayers
+    PlayerLeftRoom,
+    ClearField
 }
 public static class Settings
 {

@@ -32,8 +32,8 @@ public class MapController : MonoBehaviour, IOnEventCallback
         if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
         {
             int[] data = CreateRandomIds();
-            PhotonNetwork.RaiseEvent((byte)Events.StartGame, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
-            StartGame(data);
+            PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+            StartFirstPhase(data);
         }
         
     }
@@ -52,13 +52,14 @@ public class MapController : MonoBehaviour, IOnEventCallback
         {
             players[i].transform.SetParent(PlayerPositions[i].transform);
             players[i].transform.localPosition = new Vector3(0, 0, 0);
+            players[i].transform.localScale = new Vector3(1, 1, 1);
         }
     }
     /// <summary>
     /// Начать игру
     /// </summary>
     /// <param name="idx">Массив индексов для карт</param>
-    private void StartGame(int[] idx)
+    private void StartFirstPhase(int[] idx)
     {
         //создать нужное количество карт
         for (int i = 0; i < idx.Length; i++)
@@ -99,14 +100,20 @@ public class MapController : MonoBehaviour, IOnEventCallback
         if (players[0].GetComponent<PhotonView>().OwnerActorNr == beginnerPlayer) players[0].isPlayerTurn = true;
 
     }
+    public static void StartSecondPhase(string ace)
+    {
+        RazManager.isBeginningPhase = false;
+        RazManager.ace = ace;
+        players[0].isPlayerTurn = true;
+        PhotonNetwork.RaiseEvent((byte)Events.StartSecondPhase, ace,
+            new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+    }
     /// <summary>
     /// Убрать игрока из массива игроков
     /// </summary>
-    public void RemovePlayer()
+    public static void RemovePlayer(int actorN = -1)
     {
-        players.RemoveAt(players.Count - 1);
-        EndGame();
-        ArrangePlayers();
+        PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, actorN, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
     }
     /// <summary>
     /// Закончить игру
@@ -116,7 +123,18 @@ public class MapController : MonoBehaviour, IOnEventCallback
         //удаляем все карты
         foreach (GameObject item in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card"))
             Destroy(item);
+        foreach (PlayerControl player in players)
+            player.isPlayerTurn = false;
+        RazManager.isBeginningPhase = true;
+        RazManager.ace = "";
         allCards.Clear();
+        players.Clear();Debug.LogError(111);
+        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
+        {
+            int[] data = CreateRandomIds();
+            PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+            StartFirstPhase(data);
+        }
     }
     /// <summary>
     /// Создать псевдорандомные индексы для карт
@@ -159,15 +177,28 @@ public class MapController : MonoBehaviour, IOnEventCallback
         PhotonNetwork.RaiseEvent((byte)Events.MoveCard, data,
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
+    public static void ClearField()
+    {
+        PhotonNetwork.RaiseEvent((byte)Events.ClearField, null,
+            new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+    }
+
     #region События 
     public void OnEvent(EventData photonEvent)
     {
         switch (photonEvent.Code)
         {
-            case (byte)Events.StartGame:
+            case (byte)Events.StartFirstPhase:
             {
                 int[] data = (int[])photonEvent.CustomData;
-                StartGame(data); break;
+                StartFirstPhase(data); break;
+            }
+            case (byte)Events.StartSecondPhase:
+            {
+                players[0].isPlayerTurn = false;
+                RazManager.isBeginningPhase = false;
+                RazManager.ace = (string)photonEvent.CustomData;
+                break;
             }
             case (byte)Events.ArrangePlayers:
             {
@@ -175,7 +206,29 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
             case (byte)Events.PlayerLeftRoom:
             {
-                RemovePlayer(); break;
+                int actorN = (int)photonEvent.CustomData;
+                if (actorN == -1)
+                {
+                    EndGame();
+                    ArrangePlayers();
+                }
+                else
+                {
+                    if (players.Count == 1)
+                    {
+                        players[0].GetComponent<PlayerControl>().unAss++;
+                        EndGame();
+                        ArrangePlayers();
+                    }
+                    foreach (PlayerControl player in players)
+                        if (player.GetComponent<PhotonView>().OwnerActorNr == actorN)
+                        {
+                            players.Remove(player);
+                            break;
+                        }
+                            
+                }
+                break;
             }
             case (byte)Events.SwitchPlayerTurn:
             {
@@ -197,17 +250,30 @@ public class MapController : MonoBehaviour, IOnEventCallback
                     if (item.GetComponent<CardScript>().thisCard.Value == value &&
                         item.GetComponent<CardScript>().thisCard.Suit.Equals(suit))
                     {
+                        item.transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, 0);
+                        item.transform.localRotation = Quaternion.Euler(0, 0, 0);
                         if (actorN != -1)
+                        {
                             foreach (GameObject player in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player"))
                                 if (player.GetComponent<PhotonView>().OwnerActorNr == actorN)
                                 {
                                     AttachCard(item, FindChildrenWithTag(player.transform.parent.parent.parent.gameObject, "HandPosition")[0].transform);
                                     return;
-                                }  
-                        else AttachCard(item, field.transform);
-                        return;
+                                }
+                        }
+                        else
+                        {
+                            AttachCard(item, field.transform);
+                            return;
+                        }
                     }
                 }
+                break;
+            }
+            case (byte)Events.ClearField:
+            {
+                foreach (GameObject item in FindChildrenWithTag(field, "Card"))
+                    Destroy(item);
                 break;
             }
         }

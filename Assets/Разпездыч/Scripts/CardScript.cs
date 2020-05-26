@@ -1,6 +1,7 @@
 ﻿using Photon.Pun;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public struct Card
 {
@@ -26,13 +27,21 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     {
         try
         {
+            FieldType parentType = transform.parent.GetComponent<DropPlaceScript>().Type;
             if (RazManager.isBeginningPhase)
             {
                 transform.GetChild(0).GetChild(1).gameObject
-                      .SetActive(transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND
-                      || transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.ENEMY_HAND);
-                      //.SetActive(true);
+                      .SetActive(parentType == FieldType.ENEMY_HAND || parentType == FieldType.MY_HAND ||
+                                (parentType == FieldType.FIELD && transform.parent.childCount == 1));
             }
+            else
+            {
+                transform.GetChild(0).GetChild(1).gameObject.SetActive(parentType == FieldType.FIELD || parentType == FieldType.MY_HAND);
+            }
+
+            if (RazManager.ace.Length != 0 && thisCard.Suit.Equals(RazManager.ace))
+                transform.GetChild(0).GetChild(1).GetComponent<Image>().color = parentType == FieldType.MY_HAND ? new Color(0.85f, 0.85f, 1) : Color.white;
+            transform.GetChild(0).GetChild(0).GetComponent<RawImage>().color = parentType == FieldType.UNASS ? new Color(0.4f, 0.4f, 0.4f) : Color.white;
         }
         catch { }
     }
@@ -47,16 +56,19 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     }
     public void OnBeginDrag(PointerEventData eventData)
     {
+        MapController.RemovePlayer(1);
         prevDefaultParent = DefaultParent = transform.parent;
+        FieldType parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;
         if (RazManager.isBeginningPhase)//если раздаём карты
             isDraggable = MapController.players[0].isPlayerTurn &&//если ход игрока
-                          ((DefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND && transform.GetSiblingIndex() == DefaultParent.childCount - 1) || //и если он берёт последнюю карту с руки
-                          (DefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD));//или если он берёт карту с поля
-
+                          ((parentType == FieldType.MY_HAND && transform.GetSiblingIndex() == DefaultParent.childCount - 1) || //и если он берёт последнюю карту с руки
+                           (parentType == FieldType.FIELD));//или если он берёт карту с поля
+        else
+            isDraggable = MapController.players[0].isPlayerTurn &&
+                          (parentType == FieldType.MY_HAND ||
+                          (parentType == FieldType.FIELD && transform.GetSiblingIndex() == 0));
         if (!isDraggable) return;
-        if (RazManager.isBeginningPhase && transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD &&
-            transform.parent.childCount == 0)
-            RazManager.ace = thisCard.Suit;
+
         transform.GetChild(0).GetChild(1).gameObject.SetActive(true);
         transform.GetChild(0).rotation = Quaternion.Euler(0, 0, 0);
         transform.SetParent(DefaultParent.parent.parent);
@@ -73,32 +85,88 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     public void OnEndDrag(PointerEventData eventData)
     {
         if (!isDraggable) return;
+        FieldType parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;
+        #region Проверка, что родитель определён верно
         if (RazManager.isBeginningPhase)
         {
-            FieldType parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;
-            if (parentType != FieldType.MY_HAND && parentType != FieldType.ENEMY_HAND)
-            {
+            if (parentType != FieldType.MY_HAND && parentType != FieldType.ENEMY_HAND)//если кинул не пойми куда, то себе в руку 
                 DefaultParent = MapController.FindChildrenWithTag(DefaultParent.parent.parent.gameObject, "HandPosition")[0].transform;
-                parentType = FieldType.MY_HAND;
-            }
-            int currentCard = thisCard.Value, 
-                lastCard = DefaultParent.childCount != 0 ? DefaultParent.transform.GetChild(DefaultParent.childCount - 1).GetComponent<CardScript>().thisCard.Value : -1;
-            if (parentType == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND && // если положил в свою руку не из своей руки
-                (lastCard != -1 && // и если в руке были карты
-                ((lastCard == 14 && currentCard != MapController.minCard) || (lastCard != 14 && (currentCard - lastCard != 1)))))// и если карта не идёт по иерархии
-                    MapController.SwitchPlayerTurn();// то передать ход
         }
+        else 
+        {
+            if ((parentType != FieldType.MY_HAND && parentType != FieldType.FIELD)//если кинул не пойми куда
+              || parentType == FieldType.FIELD && prevDefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD)//или взял с поля, то себе в руку
+                DefaultParent = MapController.FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "HandPosition")[0].transform;
+        }
+        #endregion
+
         transform.SetParent(DefaultParent);
         transform.localScale = new Vector3(1, 1, 1);
+        GetComponent<CanvasGroup>().blocksRaycasts = true;
 
-        if (transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD)
+        #region Передача хода
+        parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;
+        int currentCard = thisCard.Value,
+                lastCard = DefaultParent.childCount != 0 ? DefaultParent.transform.GetChild(DefaultParent.childCount - 1).GetComponent<CardScript>().thisCard.Value : -1;
+        if (RazManager.isBeginningPhase)
+        {
+            if (parentType == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND && // если положил в свою руку не из своей руки
+               (lastCard != -1 && // и если в руке были карты
+               ((lastCard == 14 && currentCard != MapController.minCard) || (lastCard != 14 && (currentCard - lastCard != 1)))))// и если карта не идёт по иерархии
+                    MapController.SwitchPlayerTurn();// то передать ход
+        }
+        else
+        {
+            if (parentType == FieldType.FIELD)
+            {
+                if (transform.parent.childCount != MapController.players.Count)
+                    MapController.SwitchPlayerTurn();
+            }
+            else if ((parentType == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND) ||
+                      parentType != FieldType.MY_HAND)
+                MapController.SwitchPlayerTurn();
+        }
+        #endregion
+
+        #region Синхронизация карт
+        if (parentType == FieldType.FIELD)
+        {
             MapController.MoveCard(thisCard.Value, thisCard.Suit);
+            if (!RazManager.isBeginningPhase && transform.parent.childCount == MapController.players.Count)// когда карт столько же, сколько игроков, то удаляем карты
+                MapController.ClearField();
+        }
 
-        else if (transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.ENEMY_HAND ||
-                 (transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND))
-            MapController.MoveCard(thisCard.Value, thisCard.Suit, 
+        if ((RazManager.isBeginningPhase && parentType == FieldType.ENEMY_HAND) ||
+            (parentType == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND))
+            MapController.MoveCard(thisCard.Value, thisCard.Suit,
                 MapController.FindChildrenWithTag(transform.parent.parent.gameObject, "Player")[0].GetComponent<PhotonView>().OwnerActorNr);
 
-        GetComponent<CanvasGroup>().blocksRaycasts = true;
+        if (!RazManager.isBeginningPhase && prevDefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND) // unass и окончание игры
+        {
+            GameObject unassPosition = MapController.FindChildrenWithTag(prevDefaultParent.transform.parent.gameObject, "UnAssPosition")[0];
+            int player = MapController.FindChildrenWithTag(unassPosition.transform.parent.gameObject, "Player")[0].GetComponent<PhotonView>().OwnerActorNr;
+
+            if (prevDefaultParent.childCount == 0)
+                MapController.RemovePlayer(player);
+
+            else if (prevDefaultParent.transform.childCount <= unassPosition.transform.childCount)
+            {
+                int childCount = unassPosition.transform.childCount;
+                for (int i = 0; i < childCount; i++)
+                {
+                    Transform unass = unassPosition.transform.GetChild(0);
+                    unass.SetParent(MapController.FindChildrenWithTag(unass.parent.parent.gameObject, "HandPosition")[0].transform);
+                    unass.localScale = new Vector3(1, 1, 1);
+                    unass.localRotation = Quaternion.Euler(0, 0, 0);
+                    unass.transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, 0);
+                    MapController.MoveCard(unass.GetComponent<CardScript>().thisCard.Value, unass.GetComponent<CardScript>().thisCard.Suit, player);
+                }
+            }      
+        }
+        #endregion
+
+        if (RazManager.isBeginningPhase && prevDefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD &&
+            prevDefaultParent.childCount == 0)// если осталась одна карта, то начинается вторая фаза игры
+            MapController.StartSecondPhase(thisCard.Suit);
     }
 }

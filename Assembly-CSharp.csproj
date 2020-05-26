@@ -63,8 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Main\Resources\Players\PlayerControl.cs" />
-    <Compile Include="Assets\Main\Resources\Players\PLayerControlOffline.cs" />
+    <Compile Include="Assets\Main\Resources\PlayerControl.cs" />
     <Compile Include="Assets\Main\Scripts\BetSlider.cs" />
     <Compile Include="Assets\Main\Scripts\CameraScript.cs" />
     <Compile Include="Assets\Main\Scripts\ChangeNickName.cs" />
@@ -90,7 +89,6 @@
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\FriendItem.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\IgnoreUiRaycastWhenInactive.cs" />
     <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\NamePickGui.cs" />
-    <Compile Include="Assets\Photon\PhotonRealtime\Demos\DemoLoadBalancing\ConnectAndJoinRandomLb.cs" />
     <Compile Include="Assets\Разпездыч\Scripts\CardScript.cs" />
     <Compile Include="Assets\Разпездыч\Scripts\DropPlaceScript.cs" />
     <Compile Include="Assets\Разпездыч\Scripts\HandScript.cs" />
@@ -684,14 +682,6 @@
     <ProjectReference Include="PunDemos.DemoHubEditor.csproj">
       <Project>{3A40CE15-CA11-52ED-3428-96FB9C522346}</Project>
       <Name>PunDemos.DemoHubEditor</Name>
-    </ProjectReference>
-    <ProjectReference Include="PunDemos.DemoSlotcarEditor.csproj">
-      <Project>{97E5FE88-8DEC-27E8-7AD5-62F4E71A32F7}</Project>
-      <Name>PunDemos.DemoSlotcarEditor</Name>
-    </ProjectReference>
-    <ProjectReference Include="PhotonUnityNetworking.Demos.csproj">
-      <Project>{99FD3765-1195-3FE6-1204-C5CAA2E47A91}</Project>
-      <Name>PhotonUnityNetworking.Demos</Name>
     </ProjectReference>
     <ProjectReference Include="PhotonUnityNetworking.Utilities.csproj">
       <Project>{3EFF3961-C58F-6D24-D632-8CE3E4EBB89E}</Project>

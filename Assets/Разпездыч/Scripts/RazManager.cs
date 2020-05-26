@@ -8,10 +8,12 @@ using UnityEngine.SceneManagement;
 public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
 {
     public GameObject playerPref;
-    public static bool isBeginningPhase { get; set; } = true;
-    public static string ace { get; set; } = "";
-    void Start()
+    public static bool isBeginningPhase;
+    public static string ace;
+    void Awake()
     {
+        isBeginningPhase = true;
+        ace = "";
         PhotonNetwork.Instantiate(playerPref.name, new Vector3(0,0,0), Quaternion.identity);
     }
     private void Update()
@@ -28,19 +30,12 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     }
     public void Leave()
     {
-        PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+        MapController.RemovePlayer();
         PhotonNetwork.LeaveRoom();
     }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        //if (stream.IsWriting)
-        //{
-        //    stream.SendNext();
-        //}
-        //else
-        //{
-        //     = ()stream.ReceiveNext();
-        //}
+        
     }
 }

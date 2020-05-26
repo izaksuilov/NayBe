@@ -149,16 +149,16 @@ public class MapController : MonoBehaviour, IOnEventCallback
     }
     public static void SwitchPlayerTurn()
     {
-        //players[0].isPlayerTurn = false;
-        Debug.LogError("check it");
+        players[0].isPlayerTurn = false;
         PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, players[players.Count-1].GetComponent<PhotonView>().OwnerActorNr,
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
-    //public static void MoveCard(int value, int suit, int typeField)
-    //{
-    //    PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, ,
-    //        new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
-    //}
+    public static void MoveCard(int value, string suit, int actorN = -1)
+    {
+        object[] data = actorN == -1 ? new object[] {value, suit} : new object[] {value, suit, actorN}; 
+        PhotonNetwork.RaiseEvent((byte)Events.MoveCard, data,
+            new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+    }
     #region События 
     public void OnEvent(EventData photonEvent)
     {
@@ -183,13 +183,32 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 for (int i = 0; i < players.Count; i++)
                 {
                     if(players[i].GetComponent<PhotonView>().OwnerActorNr == data) players[i].isPlayerTurn = true;
-                    break;
+                    return;
                 }break;
             }
             case (byte)Events.MoveCard:
             {
-                int[] data = (int[])photonEvent.CustomData;
-                StartGame(data); break;
+                object[] data = (object[])photonEvent.CustomData;
+                int value = (int)data[0], actorN = -1;
+                string suit = (string)data[1];
+                if (data.Length == 3) actorN = (int)data[2];
+                foreach (GameObject item in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card"))
+                {
+                    if (item.GetComponent<CardScript>().thisCard.Value == value &&
+                        item.GetComponent<CardScript>().thisCard.Suit.Equals(suit))
+                    {
+                        if (actorN != -1)
+                            foreach (GameObject player in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player"))
+                                if (player.GetComponent<PhotonView>().OwnerActorNr == actorN)
+                                {
+                                    AttachCard(item, FindChildrenWithTag(player.transform.parent.parent.parent.gameObject, "HandPosition")[0].transform);
+                                    return;
+                                }  
+                        else AttachCard(item, field.transform);
+                        return;
+                    }
+                }
+                break;
             }
         }
     }
@@ -219,7 +238,6 @@ public class MapController : MonoBehaviour, IOnEventCallback
         children.Reverse();
         return children;
     }
-    
 }
 class PlayerComparer : IComparer<PlayerControl>
 {

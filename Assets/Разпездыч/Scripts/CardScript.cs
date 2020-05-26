@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Photon.Pun;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 public struct Card
@@ -28,9 +29,9 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             if (RazManager.isBeginningPhase)
             {
                 transform.GetChild(0).GetChild(1).gameObject
-                      //.SetActive(transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND
-                      //|| transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.ENEMY_HAND);
-                      .SetActive(true);
+                      .SetActive(transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND
+                      || transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.ENEMY_HAND);
+                      //.SetActive(true);
             }
         }
         catch { }
@@ -53,6 +54,9 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                           (DefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD));//или если он берёт карту с поля
 
         if (!isDraggable) return;
+        if (RazManager.isBeginningPhase && transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD &&
+            transform.parent.childCount == 0)
+            RazManager.ace = thisCard.Suit;
         transform.GetChild(0).GetChild(1).gameObject.SetActive(true);
         transform.GetChild(0).rotation = Quaternion.Euler(0, 0, 0);
         transform.SetParent(DefaultParent.parent.parent);
@@ -86,7 +90,15 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
         transform.SetParent(DefaultParent);
         transform.localScale = new Vector3(1, 1, 1);
-        //MapController.MoveCard();
+
+        if (transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD)
+            MapController.MoveCard(thisCard.Value, thisCard.Suit);
+
+        else if (transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.ENEMY_HAND ||
+                 (transform.parent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND))
+            MapController.MoveCard(thisCard.Value, thisCard.Suit, 
+                MapController.FindChildrenWithTag(transform.parent.parent.gameObject, "Player")[0].GetComponent<PhotonView>().OwnerActorNr);
+
         GetComponent<CanvasGroup>().blocksRaycasts = true;
     }
 }

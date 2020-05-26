@@ -8,8 +8,8 @@ using UnityEngine.SceneManagement;
 public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
 {
     public GameObject playerPref;
-    public MapController MapController;
     public static bool isBeginningPhase { get; set; } = true;
+    public static string ace { get; set; } = "";
     void Start()
     {
         PhotonNetwork.Instantiate(playerPref.name, new Vector3(0,0,0), Quaternion.identity);

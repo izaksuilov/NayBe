@@ -5,11 +5,12 @@ using Photon.Realtime;
 using ExitGames.Client.Photon;
 using UnityEngine.UI;
 using System;
+using System.Collections;
 
 public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] Sprite[] cardsImage;//лицевые стороны карт
-    [SerializeField] GameObject cardPrefab, field, positions, otherPlayer;
+    [SerializeField] GameObject cardPrefab, field, positions, otherPlayer, looserNick;
     public static List<PlayerControl> players { get; private set; }
     public static List<Card> allCards;
     public static int minCard { get; private set; } = 0;
@@ -29,7 +30,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         players.Add(player);//когда добавляется игрок, нужно переместить всех игроков в зависимости от их количества
         ArrangePlayers();
         PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
-        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
+        if (players.Count == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
         {
             int[] data = CreateRandomIds();
             PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
@@ -98,7 +99,6 @@ public class MapController : MonoBehaviour, IOnEventCallback
         }// игрок с наибольшей картой начнёт ходить
         players = PlayerComparer.PutMyPlayerFirst(players);
         if (players[0].GetComponent<PhotonView>().OwnerActorNr == beginnerPlayer) players[0].isPlayerTurn = true;
-
     }
     public static void StartSecondPhase(string ace)
     {
@@ -118,23 +118,40 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// <summary>
     /// Закончить игру
     /// </summary>
-    private void EndGame()
+    private IEnumerator EndGame(string nickname = "")
     {
-        //удаляем все карты
-        foreach (GameObject item in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card"))
-            Destroy(item);
-        foreach (PlayerControl player in players)
-            player.isPlayerTurn = false;
-        RazManager.isBeginningPhase = true;
-        RazManager.ace = "";
-        allCards.Clear();
-        players.Clear();Debug.LogError(111);
-        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
+        
+        yield return new WaitForSeconds(0.005f);
+        var cards = FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card");
+        foreach (GameObject item in cards)
         {
-            int[] data = CreateRandomIds();
-            PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
-            StartFirstPhase(data);
+            if (item.transform.position.x < -100) { Destroy(item); continue; }
+            int randN = item.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
+            item.transform.position = new Vector3(item.transform.position.x - 5, item.transform.position.y - randN, 1);
+            item.transform.rotation = Quaternion.Euler(0, 0, item.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(3.5f, 7.5f));
         }
+        if (cards.Count != 0)
+            StartCoroutine(EndGame(nickname));
+        else
+        {
+            ToggleLayotActive(true);
+            foreach (PlayerControl player in players)
+                player.isPlayerTurn = false;
+            RazManager.isBeginningPhase = true;
+            RazManager.ace = "";
+            allCards.Clear();
+            players.Clear();
+            if (nickname.Length != 0)
+            {
+                looserNick.SetActive(true);
+                looserNick.GetComponent<Text>().text = $"ТЫ проебал, {nickname}";
+                yield return new WaitForSeconds(3);
+                looserNick.SetActive(false);
+            }
+            foreach (GameObject player in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player"))
+                AddPlayer(player.GetComponent<PlayerControl>());
+        }
+
     }
     /// <summary>
     /// Создать псевдорандомные индексы для карт
@@ -177,10 +194,26 @@ public class MapController : MonoBehaviour, IOnEventCallback
         PhotonNetwork.RaiseEvent((byte)Events.MoveCard, data,
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
-    public static void ClearField()
+    public static void CallClearField()
     {
         PhotonNetwork.RaiseEvent((byte)Events.ClearField, null,
             new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+    }
+    private IEnumerator ClearField()
+    {
+        yield return new WaitForSeconds(0.004f);
+        foreach (GameObject item in FindChildrenWithTag(field, "Card"))
+        {
+            if (item.transform.position.x < -95) continue;
+            int randN = item.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
+            item.transform.position = new Vector3(item.transform.position.x - 10, item.transform.position.y - randN, 1);
+            item.transform.rotation = Quaternion.Euler(0, 0, item.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(3.5f, 5));
+        }
+        if (FindChildrenWithTag(field, "Card")[0].transform.position.x > -95)
+            StartCoroutine(ClearField());
+        else
+            foreach (GameObject item in FindChildrenWithTag(field, "Card"))
+                item.transform.SetParent(FindObjectOfType<Canvas>().transform);
     }
 
     #region События 
@@ -209,24 +242,23 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 int actorN = (int)photonEvent.CustomData;
                 if (actorN == -1)
                 {
-                    EndGame();
-                    ArrangePlayers();
+                    ToggleLayotActive(false);
+                    StartCoroutine(EndGame());
                 }
                 else
                 {
-                    if (players.Count == 1)
-                    {
-                        players[0].GetComponent<PlayerControl>().unAss++;
-                        EndGame();
-                        ArrangePlayers();
-                    }
                     foreach (PlayerControl player in players)
                         if (player.GetComponent<PhotonView>().OwnerActorNr == actorN)
                         {
                             players.Remove(player);
                             break;
                         }
-                            
+                    if (players.Count == 1)
+                    {
+                        players[0].GetComponent<PlayerControl>().unAss++;
+                        ToggleLayotActive(false);
+                        StartCoroutine(EndGame(players[0].GetComponent<PhotonView>().Owner.NickName));
+                    }
                 }
                 break;
             }
@@ -272,8 +304,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
             case (byte)Events.ClearField:
             {
-                foreach (GameObject item in FindChildrenWithTag(field, "Card"))
-                    Destroy(item);
+                StartCoroutine(ClearField());
                 break;
             }
         }
@@ -303,6 +334,14 @@ public class MapController : MonoBehaviour, IOnEventCallback
         }
         children.Reverse();
         return children;
+    }
+    public static void ToggleLayotActive(bool active)
+    {
+        GameObject.Find("Inner Field").GetComponent<LayoutGroup>().enabled = active;
+        foreach (var item in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "UnAssPosition"))
+            item.GetComponent<LayoutGroup>().enabled = active;
+        foreach (var item in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "HandPosition"))
+            item.GetComponent<LayoutGroup>().enabled = active;
     }
 }
 class PlayerComparer : IComparer<PlayerControl>

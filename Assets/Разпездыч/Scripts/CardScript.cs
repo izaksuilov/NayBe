@@ -29,18 +29,12 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         {
             FieldType parentType = transform.parent.GetComponent<DropPlaceScript>().Type;
             if (RazManager.isBeginningPhase)
-            {
                 transform.GetChild(0).GetChild(1).gameObject
                       .SetActive(parentType == FieldType.ENEMY_HAND || parentType == FieldType.MY_HAND ||
                                 (parentType == FieldType.FIELD && transform.parent.childCount == 1));
-            }
+                //.SetActive(true);
             else
-            {
                 transform.GetChild(0).GetChild(1).gameObject.SetActive(parentType == FieldType.FIELD || parentType == FieldType.MY_HAND);
-            }
-
-            if (RazManager.ace.Length != 0 && thisCard.Suit.Equals(RazManager.ace))
-                transform.GetChild(0).GetChild(1).GetComponent<Image>().color = parentType == FieldType.MY_HAND ? new Color(0.85f, 0.85f, 1) : Color.white;
             transform.GetChild(0).GetChild(0).GetComponent<RawImage>().color = parentType == FieldType.UNASS ? new Color(0.4f, 0.4f, 0.4f) : Color.white;
         }
         catch { }
@@ -56,7 +50,6 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
     }
     public void OnBeginDrag(PointerEventData eventData)
     {
-        MapController.RemovePlayer(1);
         prevDefaultParent = DefaultParent = transform.parent;
         FieldType parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;
         if (RazManager.isBeginningPhase)//если раздаём карты
@@ -100,10 +93,6 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
         #endregion
 
-        transform.SetParent(DefaultParent);
-        transform.localScale = new Vector3(1, 1, 1);
-        GetComponent<CanvasGroup>().blocksRaycasts = true;
-
         #region Передача хода
         parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;
         int currentCard = thisCard.Value,
@@ -119,7 +108,7 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         {
             if (parentType == FieldType.FIELD)
             {
-                if (transform.parent.childCount != MapController.players.Count)
+                if (GameObject.Find("Inner Field").transform.childCount + 1 != MapController.players.Count)
                     MapController.SwitchPlayerTurn();
             }
             else if ((parentType == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND) ||
@@ -128,12 +117,16 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
         #endregion
 
+        transform.SetParent(DefaultParent);
+        transform.localScale = new Vector3(1, 1, 1);
+        GetComponent<CanvasGroup>().blocksRaycasts = true;
+
         #region Синхронизация карт
         if (parentType == FieldType.FIELD)
         {
             MapController.MoveCard(thisCard.Value, thisCard.Suit);
             if (!RazManager.isBeginningPhase && transform.parent.childCount == MapController.players.Count)// когда карт столько же, сколько игроков, то удаляем карты
-                MapController.ClearField();
+                MapController.CallClearField();
         }
 
         if ((RazManager.isBeginningPhase && parentType == FieldType.ENEMY_HAND) ||

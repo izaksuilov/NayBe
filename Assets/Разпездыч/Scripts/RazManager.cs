@@ -12,6 +12,7 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     public static string ace;
     void Awake()
     {
+        Input.multiTouchEnabled = false;
         isBeginningPhase = true;
         ace = "";
         PhotonNetwork.Instantiate(playerPref.name, new Vector3(0,0,0), Quaternion.identity);
@@ -30,10 +31,9 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     }
     public void Leave()
     {
-        MapController.RemovePlayer();
         PhotonNetwork.LeaveRoom();
+        MapController.RemovePlayer();
     }
-
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         

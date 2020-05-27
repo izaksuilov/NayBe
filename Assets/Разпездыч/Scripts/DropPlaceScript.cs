@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public enum FieldType
 {
@@ -11,6 +12,21 @@ public enum FieldType
 public class DropPlaceScript : MonoBehaviour, IDropHandler
 {
     public FieldType Type;
+    private void Update()
+    {
+        if (Type == FieldType.FIELD && !RazManager.isBeginningPhase)
+        {
+            int distance;
+            switch (transform.childCount)
+            {
+                case 1:
+                case 2: distance = -705; break;
+                case 3: distance = -620; break;
+                default: distance = -350; break;
+            }
+            transform.GetComponent<HorizontalLayoutGroup>().spacing = distance;
+        }
+    }
     public void OnDrop(PointerEventData eventData)
     {
         CardScript card = eventData.pointerDrag.GetComponent<CardScript>();
@@ -32,6 +48,7 @@ public class DropPlaceScript : MonoBehaviour, IDropHandler
         {
             if (Type == FieldType.FIELD && card.prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.FIELD)
             {
+                if (transform.childCount >= MapController.players.Count) return;
                 if (lastCard.Suit.Equals("pik") && !currentCard.Suit.Equals("pik"))// пики бьют только пики
                     return;
                 if (currentCard.Value > lastCard.Value)

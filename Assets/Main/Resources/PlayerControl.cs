@@ -4,14 +4,19 @@ using UnityEngine.UI;
 
 public class PlayerControl : MonoBehaviour, IPunObservable
 {
-    PhotonView photonView;
     RawImage image;
+    Image bg;
+    Texture texture;
     public int unAss;
     public bool isPlayerTurn =  false;
+    public bool isInApp = true;
     void Start()
     {
-        photonView = GetComponent<PhotonView>();
-        image = transform.GetChild(0).GetComponent<RawImage>();
+        bg = transform.GetChild(0).GetComponent<Image>();
+        image = transform.GetChild(1).GetComponent<RawImage>();
+        transform.GetChild(2).GetChild(0).GetComponent<Text>().text = GetComponent<PhotonView>().Owner.NickName;
+        texture = GameObject.Find("Avatar(Clone)").GetComponent<RawImage>().texture;
+        image.texture = texture;
         unAss = (int)PhotonNetwork.CurrentRoom.CustomProperties["C3"];
         FindObjectOfType<MapController>().AddPlayer(this);
     }
@@ -23,6 +28,6 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     }
     private void Update()
     {
-        image.color = isPlayerTurn ? new Color(0.3f, 1, 0.3f) : Color.white;
+        bg.color = isPlayerTurn ? new Color(0.329f, 0.878f, 0.22f) : Color.white;
     }
 }

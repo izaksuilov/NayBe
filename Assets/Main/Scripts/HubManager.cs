@@ -11,20 +11,12 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 {
     #region Переменные
     public string sqlLobbyFilter = "(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= 1000000)";
-	[SerializeField] GameObject SettingsWindow, SearchGameWindow, CreateGameWindow, RazSettings, DurakSettings;
+	[SerializeField] GameObject SettingsWindow, SearchGameWindow, CreateGameWindow, RazSettings, DurakSettings, Cards, SearchGames, SearchCards, RoomPrefab;
 	[SerializeField] Toggle SearchWindowButton;
-	[SerializeField] Text Bet;
-	[SerializeField] GameObject Cards;
-	[SerializeField] Text UnAss, UnAff, RoomName;
+	[SerializeField] Text UnAss, UnAff, RoomName, MaxP, SearchBetFrom, SearchBetTo, Bet;
 	[SerializeField] Button CreateButton;
-	[SerializeField] Text MaxP;
-	[SerializeField] InputField NickName;
-	[SerializeField] GameObject SearchGames, SearchCards;
-	[SerializeField] Text SearchBetFrom, SearchBetTo;
 	[SerializeField] Transform ListOfRooms;
-	[SerializeField] GameObject RoomPrefab;
 	string currentSelection;
-	int lastWidth = 0, lastHeight = 0;
     #endregion
     void Update()
 	{
@@ -33,10 +25,13 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
     }
     void Awake()
 	{
+		CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Подключение...";
 		SearchWindowButton.interactable = CreateButton.interactable = false;
 		Settings.Load();
+		DontDestroyOnLoad(Instantiate(GameObject.Find("Avatar")));
 		#region Network
-		PhotonNetwork.NickName = NickName.text;
+		PhotonNetwork.NickName = Settings.nickName;
+		PhotonNetwork.NetworkingClient.LoadBalancingPeer.DisconnectTimeout = 100000;
 		PhotonNetwork.AutomaticallySyncScene = true;
 		PhotonNetwork.ConnectUsingSettings();
 		#endregion
@@ -45,6 +40,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	}
     public override void OnConnectedToMaster()
 	{
+		CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Создать комнату";
 		SearchWindowButton.interactable = CreateButton.interactable = true;
 	}
 	/// <summary>
@@ -52,7 +48,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	/// </summary>
 	public void Create()
 	{
-		if (NickName.text.Equals(""))//проверяем, что пользователь ввёл ник
+		if (Settings.nickName.Equals(""))//проверяем, что пользователь ввёл ник
 		{
 			CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Введите Никнейм";
 			CreateButton.interactable = false;
@@ -71,7 +67,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 			roomOptions.CustomRoomProperties.Add("C3", int.Parse(UnAff.text));
 		roomOptions.CustomRoomPropertiesForLobby = new string[] { "C0", "C1", "C2" };
 		roomOptions.MaxPlayers = byte.Parse(MaxP.text);
-		PhotonNetwork.CreateRoom(RoomName.text.Equals("") ? NickName.text : RoomName.text,
+		PhotonNetwork.CreateRoom(RoomName.text.Equals("") ? Settings.nickName : RoomName.text,
 								 roomOptions,
 								 new TypedLobby("myLobby", LobbyType.SqlLobby));
 	}

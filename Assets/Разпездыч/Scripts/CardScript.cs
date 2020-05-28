@@ -30,8 +30,7 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
             FieldType parentType = transform.parent.GetComponent<DropPlaceScript>().Type;
             if (RazManager.isBeginningPhase)
                 transform.GetChild(0).GetChild(1).gameObject
-                      .SetActive(parentType == FieldType.ENEMY_HAND || parentType == FieldType.MY_HAND ||
-                                (parentType == FieldType.FIELD && transform.parent.childCount == 1));
+                      .SetActive(parentType == FieldType.ENEMY_HAND || parentType == FieldType.MY_HAND);
                 //.SetActive(true);
             else
                 transform.GetChild(0).GetChild(1).gameObject.SetActive(parentType == FieldType.FIELD || parentType == FieldType.MY_HAND);
@@ -92,7 +91,9 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 DefaultParent = MapController.FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "HandPosition")[0].transform;
         }
         #endregion
-
+        int activePlayers = 0;
+        for (int i = MapController.players.Count - 1; i >= 0; i--)
+            if (MapController.FindChildrenWithTag(MapController.players[i].transform.parent.parent.parent.gameObject, "HandPosition")[0].transform.childCount != 0) activePlayers++;
         #region Передача хода
         parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;
         int currentCard = thisCard.Value,
@@ -108,7 +109,7 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         {
             if (parentType == FieldType.FIELD)
             {
-                if (GameObject.Find("Inner Field").transform.childCount + 1 != MapController.players.Count)
+                if (GameObject.Find("Inner Field").transform.childCount + 1 != activePlayers)
                     MapController.SwitchPlayerTurn();
             }
             else if ((parentType == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND) ||
@@ -121,26 +122,17 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         transform.localScale = new Vector3(1, 1, 1);
         GetComponent<CanvasGroup>().blocksRaycasts = true;
 
-        #region Синхронизация карт
-        if (parentType == FieldType.FIELD)
-        {
-            MapController.MoveCard(thisCard.Value, thisCard.Suit);
-            if (!RazManager.isBeginningPhase && transform.parent.childCount == MapController.players.Count)// когда карт столько же, сколько игроков, то удаляем карты
-                MapController.CallClearField();
-        }
-
-        if ((RazManager.isBeginningPhase && parentType == FieldType.ENEMY_HAND) ||
-            (parentType == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND))
-            MapController.MoveCard(thisCard.Value, thisCard.Suit,
-                MapController.FindChildrenWithTag(transform.parent.parent.gameObject, "Player")[0].GetComponent<PhotonView>().OwnerActorNr);
+        #region Синхронизация карт и игроков
 
         if (!RazManager.isBeginningPhase && prevDefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.MY_HAND) // unass и окончание игры
         {
             GameObject unassPosition = MapController.FindChildrenWithTag(prevDefaultParent.transform.parent.gameObject, "UnAssPosition")[0];
             int player = MapController.FindChildrenWithTag(unassPosition.transform.parent.gameObject, "Player")[0].GetComponent<PhotonView>().OwnerActorNr;
-
             if (prevDefaultParent.childCount == 0)
-                MapController.RemovePlayer(player);
+            {
+                MapController.MoveCard(thisCard.Value, thisCard.Suit);
+                MapController.PlayerWin();
+            }
 
             else if (prevDefaultParent.transform.childCount <= unassPosition.transform.childCount)
             {
@@ -154,8 +146,19 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                     unass.transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, 0);
                     MapController.MoveCard(unass.GetComponent<CardScript>().thisCard.Value, unass.GetComponent<CardScript>().thisCard.Suit, player);
                 }
-            }      
+            }
         }
+        if (parentType == FieldType.FIELD)
+        {
+            MapController.MoveCard(thisCard.Value, thisCard.Suit);
+
+            if (!RazManager.isBeginningPhase && transform.parent.childCount >= activePlayers)// когда карт столько же, сколько игроков, то удаляем карты
+                StartCoroutine(MapController.CallClearField());
+        }
+        if ((RazManager.isBeginningPhase && parentType == FieldType.ENEMY_HAND) ||
+            (parentType == FieldType.MY_HAND && prevDefaultParent.GetComponent<DropPlaceScript>().Type != FieldType.MY_HAND))
+            MapController.MoveCard(thisCard.Value, thisCard.Suit,
+                MapController.FindChildrenWithTag(transform.parent.parent.gameObject, "Player")[0].GetComponent<PhotonView>().OwnerActorNr);
         #endregion
 
         if (RazManager.isBeginningPhase && prevDefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD &&

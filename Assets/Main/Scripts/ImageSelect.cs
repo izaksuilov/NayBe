@@ -28,8 +28,7 @@ public class ImageSelect : MonoBehaviour
 				if (filePath != null)
 				{
 					File.Copy(filePath, directoryPath, true);
-					Texture2D texture = LoadImageAtPath(directoryPath);
-					GetComponent<RawImage>().texture = texture;
+					GetComponent<RawImage>().texture = LoadImageAtPath(directoryPath);
 				}
 			}, "Выберите Ваш Аватар", "image/jpg");
 		}

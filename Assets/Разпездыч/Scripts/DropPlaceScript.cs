@@ -14,14 +14,14 @@ public class DropPlaceScript : MonoBehaviour, IDropHandler
     public FieldType Type;
     private void Update()
     {
-        if (Type == FieldType.FIELD && !RazManager.isBeginningPhase)
+        if (Type == FieldType.FIELD)
         {
             int distance;
             switch (transform.childCount)
             {
                 case 1:
                 case 2: distance = -705; break;
-                case 3: distance = -620; break;
+                case 3: distance = -570; break;
                 default: distance = -350; break;
             }
             transform.GetComponent<HorizontalLayoutGroup>().spacing = distance;

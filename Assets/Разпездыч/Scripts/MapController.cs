@@ -21,6 +21,17 @@ public class MapController : MonoBehaviour, IOnEventCallback
         players = new List<PlayerControl>();
         allCards = new List<Card>();
     }
+    private void TryStartGame()
+    {
+        ArrangePlayers();
+        PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
+        {
+            int[] data = CreateRandomIds();
+            PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+            StartFirstPhase(data);
+        }
+    }
     /// <summary>
     /// Добавить игрока в массив игроков
     /// </summary>
@@ -28,15 +39,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     public void AddPlayer(PlayerControl player)
     {
         players.Add(player);//когда добавляется игрок, нужно переместить всех игроков в зависимости от их количества
-        ArrangePlayers();
-        PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
-        if (players.Count == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
-        {
-            int[] data = CreateRandomIds();
-            PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
-            StartFirstPhase(data);
-        }
-        
+        TryStartGame();
     }
     /// <summary>
     /// Расставить игроков по местам
@@ -104,6 +107,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
     {
         RazManager.isBeginningPhase = false;
         RazManager.ace = ace;
+        GameObject aceImage = GameObject.Find("AceImage");
+        aceImage.GetComponent<RawImage>().texture = Resources.Load<Texture2D>($"icons/{RazManager.ace}");
+        aceImage.GetComponent<RawImage>().color = new Color(1,1,1,1);
         players[0].isPlayerTurn = true;
         PhotonNetwork.RaiseEvent((byte)Events.StartSecondPhase, ace,
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
@@ -111,9 +117,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// <summary>
     /// Убрать игрока из массива игроков
     /// </summary>
-    public static void RemovePlayer(int actorN = -1)
+    public static void PlayerWin()
     {
-        PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, actorN, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+        PhotonNetwork.RaiseEvent((byte)Events.PlayerWin, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
     }
     /// <summary>
     /// Закончить игру
@@ -134,13 +140,13 @@ public class MapController : MonoBehaviour, IOnEventCallback
             StartCoroutine(EndGame(nickname));
         else
         {
+            GameObject.Find("AceImage").GetComponent<RawImage>().color = new Color(1, 1, 1, 0);
             ToggleLayotActive(true);
             foreach (PlayerControl player in players)
                 player.isPlayerTurn = false;
             RazManager.isBeginningPhase = true;
             RazManager.ace = "";
             allCards.Clear();
-            players.Clear();
             if (nickname.Length != 0)
             {
                 looserNick.SetActive(true);
@@ -148,8 +154,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 yield return new WaitForSeconds(3);
                 looserNick.SetActive(false);
             }
-            foreach (GameObject player in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player"))
-                AddPlayer(player.GetComponent<PlayerControl>());
+            TryStartGame();
         }
 
     }
@@ -185,8 +190,14 @@ public class MapController : MonoBehaviour, IOnEventCallback
     public static void SwitchPlayerTurn()
     {
         players[0].isPlayerTurn = false;
-        PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, players[players.Count-1].GetComponent<PhotonView>().OwnerActorNr,
-            new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+        int actorN = -1;
+        for (int i = players.Count-1; i >= 0; i--)
+        {
+            if (FindChildrenWithTag(players[i].transform.parent.parent.parent.gameObject, "HandPosition")[0].transform.childCount == 0) continue;
+            actorN = players[i].GetComponent<PhotonView>().OwnerActorNr;
+            break;
+        }
+        PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, actorN, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
     public static void MoveCard(int value, string suit, int actorN = -1)
     {
@@ -194,8 +205,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
         PhotonNetwork.RaiseEvent((byte)Events.MoveCard, data,
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
-    public static void CallClearField()
+    public static IEnumerator CallClearField()
     {
+        yield return new WaitForSeconds(0.4f);
         PhotonNetwork.RaiseEvent((byte)Events.ClearField, null,
             new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
     }
@@ -204,16 +216,25 @@ public class MapController : MonoBehaviour, IOnEventCallback
         yield return new WaitForSeconds(0.004f);
         foreach (GameObject item in FindChildrenWithTag(field, "Card"))
         {
-            if (item.transform.position.x < -95) continue;
+            if (item.transform.position.x < -170) continue;
             int randN = item.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
-            item.transform.position = new Vector3(item.transform.position.x - 10, item.transform.position.y - randN, 1);
-            item.transform.rotation = Quaternion.Euler(0, 0, item.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(3.5f, 5));
+            item.transform.position = new Vector3(item.transform.position.x - 10, item.transform.position.y - randN);
+            item.transform.rotation = Quaternion.Euler(0, 0, item.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(3.5f, 7));
         }
-        if (FindChildrenWithTag(field, "Card")[0].transform.position.x > -95)
+        if (FindChildrenWithTag(field, "Card").Count > 0 && FindChildrenWithTag(field, "Card")[0].transform.position.x > -170)////////////////////////////!!
             StartCoroutine(ClearField());
         else
             foreach (GameObject item in FindChildrenWithTag(field, "Card"))
-                item.transform.SetParent(FindObjectOfType<Canvas>().transform);
+            {
+                //item.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 1f);
+                //item.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 1f);
+                //item.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
+                //item.transform.position = new Vector3(-45, item.transform.position.y);
+                //Debug.Log(item.transform.position)
+                //item.GetComponent<CardScript>().enabled = false;
+                //item.transform.SetParent(FindObjectOfType<Canvas>().transform);
+                Destroy(item);
+            }
     }
 
     #region События 
@@ -231,6 +252,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 players[0].isPlayerTurn = false;
                 RazManager.isBeginningPhase = false;
                 RazManager.ace = (string)photonEvent.CustomData;
+                GameObject aceImage = GameObject.Find("AceImage");
+                aceImage.GetComponent<RawImage>().texture = Resources.Load<Texture2D>($"icons/{RazManager.ace}");
+                aceImage.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
                 break;
             }
             case (byte)Events.ArrangePlayers:
@@ -239,26 +263,31 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
             case (byte)Events.PlayerLeftRoom:
             {
-                int actorN = (int)photonEvent.CustomData;
-                if (actorN == -1)
+                ToggleLayotActive(false);
+                StartCoroutine(EndGame());
+                break;
+            }
+            case (byte)Events.PlayerWin:
+            {
+                int activePlayers = 0, actorN = -1, i;
+                for (int k = players.Count - 1; k >= 0; k--)
                 {
-                    ToggleLayotActive(false);
-                    StartCoroutine(EndGame());
-                }
-                else
-                {
-                    foreach (PlayerControl player in players)
-                        if (player.GetComponent<PhotonView>().OwnerActorNr == actorN)
-                        {
-                            players.Remove(player);
-                            break;
-                        }
-                    if (players.Count == 1)
+                    if (FindChildrenWithTag(players[k].transform.parent.parent.parent.gameObject, "HandPosition")[0].transform.childCount != 0)
                     {
-                        players[0].GetComponent<PlayerControl>().unAss++;
-                        ToggleLayotActive(false);
-                        StartCoroutine(EndGame(players[0].GetComponent<PhotonView>().Owner.NickName));
+                        activePlayers++;
+                        actorN = players[k].GetComponent<PhotonView>().OwnerActorNr;
                     }
+                }
+                    
+                if (activePlayers == 1)
+                {
+                    var array = FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player");
+                    for (i = 0; i < array.Count; i++)
+                    {
+                        if (array[i].GetComponent<PhotonView>().OwnerActorNr == actorN) array[i].GetComponent<PlayerControl>().unAss++; break;
+                    }
+                    ToggleLayotActive(false);
+                    StartCoroutine(EndGame(array[i].GetComponent<PhotonView>().Owner.NickName));
                 }
                 break;
             }

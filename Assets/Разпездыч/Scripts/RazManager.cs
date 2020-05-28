@@ -15,6 +15,7 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
         Input.multiTouchEnabled = false;
         isBeginningPhase = true;
         ace = "";
+        PhotonNetwork.NetworkingClient.LoadBalancingPeer.DisconnectTimeout = 100000;
         PhotonNetwork.Instantiate(playerPref.name, new Vector3(0,0,0), Quaternion.identity);
     }
     private void Update()
@@ -31,8 +32,8 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     }
     public void Leave()
     {
+        PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
         PhotonNetwork.LeaveRoom();
-        MapController.RemovePlayer();
     }
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {

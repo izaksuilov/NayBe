@@ -28,7 +28,6 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Подключение...";
 		SearchWindowButton.interactable = CreateButton.interactable = false;
 		Settings.Load();
-		DontDestroyOnLoad(Instantiate(GameObject.Find("Avatar")));
 		#region Network
 		PhotonNetwork.NickName = Settings.nickName;
 		PhotonNetwork.NetworkingClient.LoadBalancingPeer.DisconnectTimeout = 100000;

@@ -241,7 +241,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   unAss: 0
   isPlayerTurn: 0
-  isInApp: 1
 --- !u!1 &4307279756514372214
 GameObject:
   m_ObjectHideFlags: 0

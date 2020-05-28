@@ -216,12 +216,12 @@ public class MapController : MonoBehaviour, IOnEventCallback
         yield return new WaitForSeconds(0.004f);
         foreach (GameObject item in FindChildrenWithTag(field, "Card"))
         {
-            if (item.transform.position.x < -170) continue;
+            if (item.transform.position.x < -470) continue;
             int randN = item.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
-            item.transform.position = new Vector3(item.transform.position.x - 10, item.transform.position.y - randN);
+            item.transform.position = new Vector3(item.transform.position.x - 17, item.transform.position.y - randN);
             item.transform.rotation = Quaternion.Euler(0, 0, item.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(3.5f, 7));
         }
-        if (FindChildrenWithTag(field, "Card").Count > 0 && FindChildrenWithTag(field, "Card")[0].transform.position.x > -170)////////////////////////////!!
+        if (FindChildrenWithTag(field, "Card").Count > 0 && FindChildrenWithTag(field, "Card")[0].transform.position.x > -470)////////////////////////////!!
             StartCoroutine(ClearField());
         else
             foreach (GameObject item in FindChildrenWithTag(field, "Card"))
@@ -284,10 +284,15 @@ public class MapController : MonoBehaviour, IOnEventCallback
                     var array = FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player");
                     for (i = 0; i < array.Count; i++)
                     {
-                        if (array[i].GetComponent<PhotonView>().OwnerActorNr == actorN) array[i].GetComponent<PlayerControl>().unAss++; break;
+                        if (array[i].GetComponent<PhotonView>().OwnerActorNr == actorN)
+                        {
+                            array[i].GetComponent<PlayerControl>().unAss++;
+                            ToggleLayotActive(false);
+                            StartCoroutine(EndGame(array[i].GetComponent<PhotonView>().Owner.NickName));
+                            break;
+                        }
                     }
-                    ToggleLayotActive(false);
-                    StartCoroutine(EndGame(array[i].GetComponent<PhotonView>().Owner.NickName));
+
                 }
                 break;
             }

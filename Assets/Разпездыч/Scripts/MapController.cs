@@ -218,7 +218,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         {
             if (item.transform.position.x < -470) continue;
             int randN = item.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
-            item.transform.position = new Vector3(item.transform.position.x - 17, item.transform.position.y - randN);
+            item.transform.position = new Vector3(item.transform.position.x - 10, item.transform.position.y - randN);
             item.transform.rotation = Quaternion.Euler(0, 0, item.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(3.5f, 7));
         }
         if (FindChildrenWithTag(field, "Card").Count > 0 && FindChildrenWithTag(field, "Card")[0].transform.position.x > -470)////////////////////////////!!

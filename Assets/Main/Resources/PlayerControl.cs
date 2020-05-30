@@ -9,33 +9,39 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     Image bg;
     public int unAss;
     private int width = -1, height = -1;
-    public bool isPlayerTurn = false;
+    public bool isPlayerTurn = false, isFieldClear = true, isReady = true;
     string imgBytes;
     void Start()
     {
         bg = transform.GetChild(0).GetComponent<Image>();
         image = transform.GetChild(1).GetComponent<RawImage>();
         transform.GetChild(2).GetChild(0).GetComponent<Text>().text = GetComponent<PhotonView>().Owner.NickName;
-        string directoryPath = Application.persistentDataPath + "/avatar.jpg";
-        try  
-        { 
-            image.texture = NativeGallery.LoadImageAtPath(directoryPath);
-            width = image.texture.width;
-            height = image.texture.height;
+        if (GetComponent<PhotonView>().IsMine)
+        {
+            string directoryPath = Application.persistentDataPath + "/avatar.jpg";
+            try
+            {
+                image.texture = NativeGallery.LoadImageAtPath(directoryPath);
+                //width = image.texture.width;
+                //height = image.texture.height;
+            }
+            catch { image.texture = Resources.Load<Texture2D>("icons/Avatar1"); }
         }
-        catch {image.texture = Resources.Load<Texture2D>("icons/Avatar1");}
+        else
+            image.texture = Resources.Load<Texture2D>("icons/Avatar1");
 
-
-        imgBytes = Convert.ToBase64String((image.texture as Texture2D).GetRawTextureData());
+        //imgBytes = Convert.ToBase64String((image.texture as Texture2D).GetRawTextureData());
 
         unAss = (int)PhotonNetwork.CurrentRoom.CustomProperties["C3"];
-        FindObjectOfType<MapController>().AddPlayer(this);
+        MapController.players.Add(this);
+        FindObjectOfType<MapController>().TryStartGame();
 
     }
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         stream.Serialize(ref isPlayerTurn);
-        stream.Serialize(ref imgBytes);
+        stream.Serialize(ref isFieldClear);
+        //stream.Serialize(ref imgBytes);
         stream.Serialize(ref unAss);
     }
     private void Update()
@@ -48,14 +54,14 @@ public class PlayerControl : MonoBehaviour, IPunObservable
         }
         catch{ }
         bg.color = isPlayerTurn ? new Color(0.329f, 0.878f, 0.22f) : Color.white;
-
-        if (width != -1)
-        {
-            Texture2D tex = new Texture2D(width, height, TextureFormat.RGB24, false);
-            tex.LoadRawTextureData(Convert.FromBase64String(imgBytes));
-            tex.Apply();
-            image.texture = tex;
-        }
+        //bg.color = isReady ? new Color(0.329f, 0.878f, 0.22f) : Color.red;
+        //if (width != -1)
+        //{
+        //    Texture2D tex = new Texture2D(width, height, TextureFormat.RGB24, false);
+        //    tex.LoadRawTextureData(Convert.FromBase64String(imgBytes));
+        //    tex.Apply();
+        //    image.texture = tex;
+        //}
 
     }
 }

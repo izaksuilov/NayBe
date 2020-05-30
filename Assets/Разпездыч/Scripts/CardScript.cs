@@ -60,7 +60,6 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                           (parentType == FieldType.MY_HAND ||
                           (parentType == FieldType.FIELD && transform.GetSiblingIndex() == 0));
         if (!isDraggable) return;
-
         transform.GetChild(0).GetChild(1).gameObject.SetActive(true);
         transform.GetChild(0).rotation = Quaternion.Euler(0, 0, 0);
         transform.SetParent(DefaultParent.parent.parent);
@@ -94,6 +93,7 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         int activePlayers = 0;
         for (int i = MapController.players.Count - 1; i >= 0; i--)
             if (MapController.FindChildrenWithTag(MapController.players[i].transform.parent.parent.parent.gameObject, "HandPosition")[0].transform.childCount != 0) activePlayers++;
+        
         #region Передача хода
         parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;
         int currentCard = thisCard.Value,

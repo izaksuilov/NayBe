@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Photon.Pun;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class ChangeNickName : MonoBehaviour
@@ -16,5 +17,6 @@ public class ChangeNickName : MonoBehaviour
             CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Создать комнату";
             CreateButton.interactable = true;
         }
+        PhotonNetwork.NickName = Settings.nickName;
     }
 }

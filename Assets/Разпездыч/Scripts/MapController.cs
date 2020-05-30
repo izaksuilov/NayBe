@@ -14,32 +14,25 @@ public class MapController : MonoBehaviour, IOnEventCallback
     public static List<PlayerControl> players { get; private set; }
     public static List<Card> allCards;
     public static int minCard { get; private set; } = 0;
-    private void Awake()
+    public IEnumerator TryStartGame()
     {
-        for (int i = 0; i < PhotonNetwork.CurrentRoom.MaxPlayers - 2; i++)
-            Instantiate(otherPlayer, otherPlayer.transform.parent);//cоздать нужное количество мест для игроков
-        players = new List<PlayerControl>();
-        allCards = new List<Card>();
-    }
-    private void TryStartGame()
-    {
+        foreach (var player in players)
+        {
+            if (!player.isReady)
+            {
+                yield return new WaitForSeconds(0.1f);
+                StartCoroutine(TryStartGame());
+            }
+        }
+        StopCoroutine(TryStartGame());
         ArrangePlayers();
         PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
-        if (PhotonNetwork.CurrentRoom.PlayerCount == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
+        if (players.Count == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
         {
             int[] data = CreateRandomIds();
             PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
             StartFirstPhase(data);
         }
-    }
-    /// <summary>
-    /// Добавить игрока в массив игроков
-    /// </summary>
-    /// <param name="player">Текущий Игрок</param>
-    public void AddPlayer(PlayerControl player)
-    {
-        players.Add(player);//когда добавляется игрок, нужно переместить всех игроков в зависимости от их количества
-        TryStartGame();
     }
     /// <summary>
     /// Расставить игроков по местам
@@ -49,7 +42,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         players.Sort(new PlayerComparer());//сортируем игроков, в обратном порядке очереди
                                            //(так игроки будут ходить по часовой стрелке)
                                            //и ставим нашего игрока первым в массиве
-        players =  PlayerComparer.PutMyPlayerFirst(players);
+        players = PlayerComparer.PutMyPlayerFirst(players);
         List<GameObject> PlayerPositions =
             FindChildrenWithTag(positions, "PlayerPosition");
         for (int i = 0; i < players.Count; i++)
@@ -119,7 +112,8 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// </summary>
     public static void PlayerWin()
     {
-        PhotonNetwork.RaiseEvent((byte)Events.PlayerWin, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+        PhotonNetwork.RaiseEvent((byte)Events.PlayerWin, players[0].GetComponent<PhotonView>().OwnerActorNr,
+            new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
     }
     /// <summary>
     /// Закончить игру
@@ -129,12 +123,12 @@ public class MapController : MonoBehaviour, IOnEventCallback
         
         yield return new WaitForSeconds(0.005f);
         var cards = FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card");
-        foreach (GameObject item in cards)
+        foreach (GameObject card in cards)
         {
-            if (item.transform.position.x < -100) { Destroy(item); continue; }
-            int randN = item.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
-            item.transform.position = new Vector3(item.transform.position.x - 5, item.transform.position.y - randN, 1);
-            item.transform.rotation = Quaternion.Euler(0, 0, item.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(3.5f, 7.5f));
+            if (card.transform.position.x < -470) { Destroy(card); continue; }
+            int randN = card.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
+            card.transform.position = new Vector3(card.transform.position.x - 5, card.transform.position.y - randN, 1);
+            card.transform.rotation = Quaternion.Euler(0, 0, card.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(0, 10));
         }
         if (cards.Count != 0)
             StartCoroutine(EndGame(nickname));
@@ -142,19 +136,21 @@ public class MapController : MonoBehaviour, IOnEventCallback
         {
             GameObject.Find("AceImage").GetComponent<RawImage>().color = new Color(1, 1, 1, 0);
             ToggleLayotActive(true);
-            foreach (PlayerControl player in players)
-                player.isPlayerTurn = false;
+            players[0].isPlayerTurn = false;
             RazManager.isBeginningPhase = true;
             RazManager.ace = "";
             allCards.Clear();
             if (nickname.Length != 0)
             {
                 looserNick.SetActive(true);
-                looserNick.GetComponent<Text>().text = $"ТЫ проебал, {nickname}";
+                looserNick.GetComponent<Text>().text = $"Проиграл {nickname}";
                 yield return new WaitForSeconds(3);
                 looserNick.SetActive(false);
             }
-            TryStartGame();
+            foreach (var player in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player"))
+                players.Add(player.GetComponent<PlayerControl>());
+            players[0].isReady = true;
+            StartCoroutine(TryStartGame());
         }
 
     }
@@ -190,14 +186,8 @@ public class MapController : MonoBehaviour, IOnEventCallback
     public static void SwitchPlayerTurn()
     {
         players[0].isPlayerTurn = false;
-        int actorN = -1;
-        for (int i = players.Count-1; i >= 0; i--)
-        {
-            if (FindChildrenWithTag(players[i].transform.parent.parent.parent.gameObject, "HandPosition")[0].transform.childCount == 0) continue;
-            actorN = players[i].GetComponent<PhotonView>().OwnerActorNr;
-            break;
-        }
-        PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, actorN, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+        PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, players[1].GetComponent<PhotonView>().OwnerActorNr,
+            new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
     public static void MoveCard(int value, string suit, int actorN = -1)
     {
@@ -207,6 +197,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     }
     public static IEnumerator CallClearField()
     {
+        GameObject.Find("Inner Field").GetComponent<DropPlaceScript>().enabled = false;
         yield return new WaitForSeconds(0.4f);
         PhotonNetwork.RaiseEvent((byte)Events.ClearField, null,
             new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
@@ -214,27 +205,41 @@ public class MapController : MonoBehaviour, IOnEventCallback
     private IEnumerator ClearField()
     {
         yield return new WaitForSeconds(0.004f);
-        foreach (GameObject item in FindChildrenWithTag(field, "Card"))
+        foreach (GameObject card in FindChildrenWithTag(field, "Card"))
         {
-            if (item.transform.position.x < -470) continue;
-            int randN = item.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
-            item.transform.position = new Vector3(item.transform.position.x - 10, item.transform.position.y - randN);
-            item.transform.rotation = Quaternion.Euler(0, 0, item.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(3.5f, 7));
+            if (card.transform.position.x < -470) continue;
+            int randN = card.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
+            card.transform.position = new Vector3(card.transform.position.x - 10, card.transform.position.y - randN);
+            card.transform.rotation = Quaternion.Euler(0, 0, card.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(3.5f, 7));
         }
         if (FindChildrenWithTag(field, "Card").Count > 0 && FindChildrenWithTag(field, "Card")[0].transform.position.x > -470)////////////////////////////!!
             StartCoroutine(ClearField());
         else
-            foreach (GameObject item in FindChildrenWithTag(field, "Card"))
+        {
+            foreach (GameObject card in FindChildrenWithTag(field, "Card"))
             {
-                //item.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 1f);
-                //item.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 1f);
-                //item.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
-                //item.transform.position = new Vector3(-45, item.transform.position.y);
-                //Debug.Log(item.transform.position)
-                //item.GetComponent<CardScript>().enabled = false;
-                //item.transform.SetParent(FindObjectOfType<Canvas>().transform);
-                Destroy(item);
+                //card.GetComponent<RectTransform>().anchorMin = new Vector2(0.5f, 1f);
+                //card.GetComponent<RectTransform>().anchorMax = new Vector2(0.5f, 1f);
+                //card.GetComponent<RectTransform>().pivot = new Vector2(0.5f, 1f);
+                //card.transform.position = new Vector3(-45, card.transform.position.y);
+                //Debug.Log(card.transform.position)
+                //card.GetComponent<CardScript>().enabled = false;
+                //card.transform.SetParent(FindObjectOfType<Canvas>().transform);
+                Destroy(card);
             }
+            players[0].isFieldClear = true;
+            StartCoroutine(TryEnableField());
+        }
+    }
+    IEnumerator TryEnableField()
+    {
+        foreach (var player in players)
+        {
+            if (!player.GetComponent<PlayerControl>().isFieldClear) yield return new WaitForSeconds(0.1f);
+            StartCoroutine(TryEnableField());
+        }
+        field.GetComponent<DropPlaceScript>().enabled = true;
+        StopCoroutine(TryEnableField());
     }
 
     #region События 
@@ -269,40 +274,32 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
             case (byte)Events.PlayerWin:
             {
-                int activePlayers = 0, actorN = -1, i;
-                for (int k = players.Count - 1; k >= 0; k--)
-                {
-                    if (FindChildrenWithTag(players[k].transform.parent.parent.parent.gameObject, "HandPosition")[0].transform.childCount != 0)
+                int acotrN = (int)photonEvent.CustomData;
+                for (int i = 0; i < players.Count; i++)
+                    if (players[i].GetComponent<PhotonView>().OwnerActorNr == acotrN)
                     {
-                        activePlayers++;
-                        actorN = players[k].GetComponent<PhotonView>().OwnerActorNr;
+                        players[i].isReady = false;
+                        players.RemoveAt(i);
+                        break;
                     }
-                }
-                    
-                if (activePlayers == 1)
+                if (players.Count == 1)
                 {
-                    var array = FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player");
-                    for (i = 0; i < array.Count; i++)
-                    {
-                        if (array[i].GetComponent<PhotonView>().OwnerActorNr == actorN)
-                        {
-                            array[i].GetComponent<PlayerControl>().unAss++;
-                            ToggleLayotActive(false);
-                            StartCoroutine(EndGame(array[i].GetComponent<PhotonView>().Owner.NickName));
-                            break;
-                        }
-                    }
-
+                    players[0].unAss++;
+                    ToggleLayotActive(false);
+                    StartCoroutine(EndGame(players[0].GetComponent<PhotonView>().Owner.NickName));
                 }
                 break;
             }
             case (byte)Events.SwitchPlayerTurn:
             {
-                int data = (int)photonEvent.CustomData;
-                for (int i = 0; i < players.Count; i++)
+                int actorN = (int)photonEvent.CustomData;
+                foreach (var player in players)
                 {
-                    if(players[i].GetComponent<PhotonView>().OwnerActorNr == data) players[i].isPlayerTurn = true;
-                    return;
+                    if (player.GetComponent<PhotonView>().OwnerActorNr == actorN)
+                    {
+                        player.GetComponent<PlayerControl>().isPlayerTurn = true;
+                        return;
+                    }
                 }break;
             }
             case (byte)Events.MoveCard:
@@ -311,25 +308,25 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 int value = (int)data[0], actorN = -1;
                 string suit = (string)data[1];
                 if (data.Length == 3) actorN = (int)data[2];
-                foreach (GameObject item in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card"))
+                foreach (GameObject card in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card"))
                 {
-                    if (item.GetComponent<CardScript>().thisCard.Value == value &&
-                        item.GetComponent<CardScript>().thisCard.Suit.Equals(suit))
+                    if (card.GetComponent<CardScript>().thisCard.Value == value &&
+                        card.GetComponent<CardScript>().thisCard.Suit.Equals(suit))
                     {
-                        item.transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, 0);
-                        item.transform.localRotation = Quaternion.Euler(0, 0, 0);
+                        card.transform.GetChild(0).localRotation = Quaternion.Euler(0, 0, 0);
+                        card.transform.localRotation = Quaternion.Euler(0, 0, 0);
                         if (actorN != -1)
                         {
-                            foreach (GameObject player in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player"))
+                            foreach (var player in players)
                                 if (player.GetComponent<PhotonView>().OwnerActorNr == actorN)
                                 {
-                                    AttachCard(item, FindChildrenWithTag(player.transform.parent.parent.parent.gameObject, "HandPosition")[0].transform);
+                                    AttachCard(card, FindChildrenWithTag(player.transform.parent.parent.parent.gameObject, "HandPosition")[0].transform);
                                     return;
                                 }
                         }
                         else
                         {
-                            AttachCard(item, field.transform);
+                            AttachCard(card, field.transform);
                             return;
                         }
                     }
@@ -338,6 +335,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
             case (byte)Events.ClearField:
             {
+                players[0].isFieldClear = false;
                 StartCoroutine(ClearField());
                 break;
             }

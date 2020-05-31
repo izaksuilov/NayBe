@@ -90,9 +90,7 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
                 DefaultParent = MapController.FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "HandPosition")[0].transform;
         }
         #endregion
-        int activePlayers = 0;
-        for (int i = MapController.players.Count - 1; i >= 0; i--)
-            if (MapController.FindChildrenWithTag(MapController.players[i].transform.parent.parent.parent.gameObject, "HandPosition")[0].transform.childCount != 0) activePlayers++;
+        int activePlayers = MapController.players.Count;
         
         #region Передача хода
         parentType = DefaultParent.GetComponent<DropPlaceScript>().Type;

@@ -74,10 +74,6 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	{
 		SceneManager.LoadScene(currentSelection);
 	}
-	public override void OnJoinRandomFailed(short returnCode, string message)
-	{
-		
-	}
 	/// <summary>
 	/// Событие срабатывает, когда был послан запрос на обновление списка комнат
 	/// </summary>

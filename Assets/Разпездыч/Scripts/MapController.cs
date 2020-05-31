@@ -4,27 +4,36 @@ using Photon.Pun;
 using Photon.Realtime;
 using ExitGames.Client.Photon;
 using UnityEngine.UI;
-using System;
 using System.Collections;
 
 public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] Sprite[] cardsImage;//лицевые стороны карт
     [SerializeField] GameObject cardPrefab, field, positions, otherPlayer, looserNick;
+    static GameObject canvas;
     public static List<PlayerControl> players { get; private set; }
     public static List<Card> allCards;
     public static int minCard { get; private set; } = 0;
-    public IEnumerator TryStartGame()
+    private void Awake()
     {
+        canvas = FindObjectOfType<Canvas>().gameObject;
+        players = new List<PlayerControl>();
+        allCards = new List<Card>();
+    }
+    private void Update()
+    {
+        // "синхронизация игрового процесса" 
         foreach (var player in players)
-        {
-            if (!player.isReady)
-            {
-                yield return new WaitForSeconds(0.1f);
-                StartCoroutine(TryStartGame());
-            }
-        }
-        StopCoroutine(TryStartGame());
+            if (!player.GetComponent<PlayerControl>().isFieldClear) goto skipEnablefield;
+        field.GetComponent<DropPlaceScript>().enabled = true;
+
+    skipEnablefield:
+
+        if (players.Count != PhotonNetwork.CurrentRoom.MaxPlayers) return;
+        foreach (var player in players)
+            if (!player.isReadyToStart)
+                return;
+
         ArrangePlayers();
         PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
         if (players.Count == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
@@ -32,32 +41,16 @@ public class MapController : MonoBehaviour, IOnEventCallback
             int[] data = CreateRandomIds();
             PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
             StartFirstPhase(data);
+            players[0].isReadyToStart = false;
         }
     }
+
     /// <summary>
-    /// Расставить игроков по местам
+    /// Начать первую фазу игры (раздача карт)
     /// </summary>
-    private void ArrangePlayers()
-    {
-        players.Sort(new PlayerComparer());//сортируем игроков, в обратном порядке очереди
-                                           //(так игроки будут ходить по часовой стрелке)
-                                           //и ставим нашего игрока первым в массиве
-        players = PlayerComparer.PutMyPlayerFirst(players);
-        List<GameObject> PlayerPositions =
-            FindChildrenWithTag(positions, "PlayerPosition");
-        for (int i = 0; i < players.Count; i++)
-        {
-            players[i].transform.SetParent(PlayerPositions[i].transform);
-            players[i].transform.localPosition = new Vector3(0, 0, 0);
-            players[i].transform.localScale = new Vector3(1, 1, 1);
-        }
-    }
-    /// <summary>
-    /// Начать игру
-    /// </summary>
-    /// <param name="idx">Массив индексов для карт</param>
     private void StartFirstPhase(int[] idx)
     {
+        players[0].isReadyToStart = false;
         //создать нужное количество карт
         for (int i = 0; i < idx.Length; i++)
         {
@@ -96,50 +89,46 @@ public class MapController : MonoBehaviour, IOnEventCallback
         players = PlayerComparer.PutMyPlayerFirst(players);
         if (players[0].GetComponent<PhotonView>().OwnerActorNr == beginnerPlayer) players[0].isPlayerTurn = true;
     }
+
+    /// <summary>
+    /// Начать вторую фазу игры (непосредтсвенно игра)
+    /// </summary>
     public static void StartSecondPhase(string ace)
     {
         RazManager.isBeginningPhase = false;
         RazManager.ace = ace;
         GameObject aceImage = GameObject.Find("AceImage");
         aceImage.GetComponent<RawImage>().texture = Resources.Load<Texture2D>($"icons/{RazManager.ace}");
-        aceImage.GetComponent<RawImage>().color = new Color(1,1,1,1);
+        aceImage.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
         players[0].isPlayerTurn = true;
-        PhotonNetwork.RaiseEvent((byte)Events.StartSecondPhase, ace,
+        PhotonNetwork.RaiseEvent((byte)Events.StartSecondPhase, new object[] {ace, players[0].GetComponent<PhotonView>().OwnerActorNr},
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
-    /// <summary>
-    /// Убрать игрока из массива игроков
-    /// </summary>
-    public static void PlayerWin()
-    {
-        PhotonNetwork.RaiseEvent((byte)Events.PlayerWin, players[0].GetComponent<PhotonView>().OwnerActorNr,
-            new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
-    }
+
     /// <summary>
     /// Закончить игру
     /// </summary>
     private IEnumerator EndGame(string nickname = "")
     {
-        
         yield return new WaitForSeconds(0.005f);
-        var cards = FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card");
+        var cards = FindChildrenWithTag(canvas, "Card");
         foreach (GameObject card in cards)
         {
             if (card.transform.position.x < -470) { Destroy(card); continue; }
-            int randN = card.GetComponent<CardScript>().thisCard.Value > 10 ? UnityEngine.Random.Range(0, 4) : UnityEngine.Random.Range(-4, 0);
+            int randN = card.GetComponent<CardScript>().thisCard.Value > 10 ? Random.Range(0, 4) : Random.Range(-4, 0);
             card.transform.position = new Vector3(card.transform.position.x - 5, card.transform.position.y - randN, 1);
-            card.transform.rotation = Quaternion.Euler(0, 0, card.transform.rotation.eulerAngles.z - UnityEngine.Random.Range(0, 10));
+            card.transform.rotation = Quaternion.Euler(0, 0, card.transform.rotation.eulerAngles.z - Random.Range(0, 10));
         }
         if (cards.Count != 0)
             StartCoroutine(EndGame(nickname));
         else
         {
             GameObject.Find("AceImage").GetComponent<RawImage>().color = new Color(1, 1, 1, 0);
-            ToggleLayotActive(true);
-            players[0].isPlayerTurn = false;
+            SetLayoutActive(true);
             RazManager.isBeginningPhase = true;
             RazManager.ace = "";
             allCards.Clear();
+            players.Clear();
             if (nickname.Length != 0)
             {
                 looserNick.SetActive(true);
@@ -147,32 +136,55 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 yield return new WaitForSeconds(3);
                 looserNick.SetActive(false);
             }
-            foreach (var player in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Player"))
+            foreach (var player in FindChildrenWithTag(canvas, "Player"))
                 players.Add(player.GetComponent<PlayerControl>());
-            players[0].isReady = true;
-            StartCoroutine(TryStartGame());
+            players.Sort(new PlayerComparer());
+            players = PlayerComparer.PutMyPlayerFirst(players);
+            players[0].isPlayerTurn = false;
+            players[0].isReadyToStart = true;
         }
+    }
 
-    }
     /// <summary>
-    /// Создать псевдорандомные индексы для карт
+    /// Создать нужное количество мест для игроков
     /// </summary>
-    private int[] CreateRandomIds()
+    public void MakePlaceForPlayers()
     {
-        int countOfCards = int.Parse((string)PhotonNetwork.CurrentRoom.CustomProperties["C1"]);
-        List<int> list = new List<int>();
-        //создаем псевдорандомный массив неповторяющихся чисел
-        int[] idx = new int[countOfCards];
-        for (int i = 51; i > 51 - countOfCards; i--)
-            list.Add(i);
-        for (int i = 0; i < countOfCards; i++)
-        {
-            int randomId = UnityEngine.Random.Range(0, list.Count);
-            idx[i] = list[randomId];
-            list.RemoveAt(randomId);
-        }
-        return idx;
+        for (int i = 0; i < PhotonNetwork.CurrentRoom.MaxPlayers - 2; i++)
+            Instantiate(otherPlayer, otherPlayer.transform.parent);
     }
+
+    /// <summary>
+    /// Расставить игроков по местам
+    /// </summary>
+    public void ArrangePlayers()
+    {
+        players.Sort(new PlayerComparer());//сортируем игроков, в обратном порядке очереди
+                                           //(так игроки будут ходить по часовой стрелке)
+                                           //и ставим нашего игрока первым в массиве
+        players.Reverse();  
+        players = PlayerComparer.PutMyPlayerFirst(players);
+        List<GameObject> PlayerPositions =
+            FindChildrenWithTag(positions, "PlayerPosition");
+        for (int i = 0; i < players.Count; i++)
+        {
+            players[i].transform.SetParent(PlayerPositions[i].transform);
+            players[i].transform.localPosition = new Vector3(0, 0, 0);
+            players[i].transform.localScale = new Vector3(1, 1, 1);
+        }
+        players.Sort(new PlayerComparer());
+        players = PlayerComparer.PutMyPlayerFirst(players);
+    }
+
+    /// <summary>
+    /// Убрать выигравшего игрока из массива игроков
+    /// </summary>
+    public static void PlayerWin()
+    {
+        PhotonNetwork.RaiseEvent((byte)Events.PlayerWin, players[0].GetComponent<PhotonView>().OwnerActorNr,
+            new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+    }
+
     /// <summary>
     /// Присоединить карту к объекту-родителю
     /// </summary>
@@ -183,18 +195,30 @@ public class MapController : MonoBehaviour, IOnEventCallback
         card.transform.rotation = rotation;
         card.transform.localScale = new Vector3(1, 1, 1);
     }
+
+    /// <summary>
+    /// Передать ход следующему игроку
+    /// </summary>
     public static void SwitchPlayerTurn()
     {
         players[0].isPlayerTurn = false;
         PhotonNetwork.RaiseEvent((byte)Events.SwitchPlayerTurn, players[1].GetComponent<PhotonView>().OwnerActorNr,
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
+
+    /// <summary>
+    /// Переместить карту
+    /// </summary>
     public static void MoveCard(int value, string suit, int actorN = -1)
     {
         object[] data = actorN == -1 ? new object[] {value, suit} : new object[] {value, suit, actorN}; 
         PhotonNetwork.RaiseEvent((byte)Events.MoveCard, data,
             new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
+
+    /// <summary>
+    /// Начать убирать карты в бито
+    /// </summary>
     public static IEnumerator CallClearField()
     {
         GameObject.Find("Inner Field").GetComponent<DropPlaceScript>().enabled = false;
@@ -202,6 +226,10 @@ public class MapController : MonoBehaviour, IOnEventCallback
         PhotonNetwork.RaiseEvent((byte)Events.ClearField, null,
             new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
     }
+
+    /// <summary>
+    /// Убрать карты в бито
+    /// </summary>
     private IEnumerator ClearField()
     {
         yield return new WaitForSeconds(0.004f);
@@ -228,18 +256,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 Destroy(card);
             }
             players[0].isFieldClear = true;
-            StartCoroutine(TryEnableField());
         }
-    }
-    IEnumerator TryEnableField()
-    {
-        foreach (var player in players)
-        {
-            if (!player.GetComponent<PlayerControl>().isFieldClear) yield return new WaitForSeconds(0.1f);
-            StartCoroutine(TryEnableField());
-        }
-        field.GetComponent<DropPlaceScript>().enabled = true;
-        StopCoroutine(TryEnableField());
     }
 
     #region События 
@@ -254,9 +271,13 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
             case (byte)Events.StartSecondPhase:
             {
-                players[0].isPlayerTurn = false;
+                object[] data = (object[])photonEvent.CustomData;
+                int actorN = (int)data[1];
+                foreach (var player in players)
+                    player.isPlayerTurn = player.GetComponent<PhotonView>().OwnerActorNr == actorN ? true : false;
+                    
                 RazManager.isBeginningPhase = false;
-                RazManager.ace = (string)photonEvent.CustomData;
+                RazManager.ace = (string)data[0];
                 GameObject aceImage = GameObject.Find("AceImage");
                 aceImage.GetComponent<RawImage>().texture = Resources.Load<Texture2D>($"icons/{RazManager.ace}");
                 aceImage.GetComponent<RawImage>().color = new Color(1, 1, 1, 1);
@@ -268,7 +289,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
             case (byte)Events.PlayerLeftRoom:
             {
-                ToggleLayotActive(false);
+                SetLayoutActive(false);
                 StartCoroutine(EndGame());
                 break;
             }
@@ -278,14 +299,14 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 for (int i = 0; i < players.Count; i++)
                     if (players[i].GetComponent<PhotonView>().OwnerActorNr == acotrN)
                     {
-                        players[i].isReady = false;
+                        players[i].isReadyToStart = false;
                         players.RemoveAt(i);
                         break;
                     }
                 if (players.Count == 1)
                 {
                     players[0].unAss++;
-                    ToggleLayotActive(false);
+                    SetLayoutActive(false);
                     StartCoroutine(EndGame(players[0].GetComponent<PhotonView>().Owner.NickName));
                 }
                 break;
@@ -308,7 +329,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 int value = (int)data[0], actorN = -1;
                 string suit = (string)data[1];
                 if (data.Length == 3) actorN = (int)data[2];
-                foreach (GameObject card in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card"))
+                foreach (GameObject card in FindChildrenWithTag(canvas, "Card"))
                 {
                     if (card.GetComponent<CardScript>().thisCard.Value == value &&
                         card.GetComponent<CardScript>().thisCard.Suit.Equals(suit))
@@ -338,7 +359,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 players[0].isFieldClear = false;
                 StartCoroutine(ClearField());
                 break;
-            }
+            }            
         }
     }
     private void OnEnable()
@@ -350,6 +371,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         PhotonNetwork.RemoveCallbackTarget(this);
     }
     #endregion
+    
     /// <summary>
     /// Находит объект-ребенок в объекте-родителе по тегу
     /// </summary>
@@ -367,14 +389,39 @@ public class MapController : MonoBehaviour, IOnEventCallback
         children.Reverse();
         return children;
     }
-    public static void ToggleLayotActive(bool active)
+
+    /// <summary>
+    /// Создать псевдорандомные индексы для карт (перемешать колоду)
+    /// </summary>
+    private int[] CreateRandomIds()
+    {
+        int countOfCards = int.Parse((string)PhotonNetwork.CurrentRoom.CustomProperties["C1"]);
+        List<int> list = new List<int>();
+        //создаем псевдорандомный массив неповторяющихся чисел
+        int[] idx = new int[countOfCards];
+        for (int i = 51; i > 51 - countOfCards; i--)
+            list.Add(i);
+        for (int i = 0; i < countOfCards; i++)
+        {
+            int randomId = UnityEngine.Random.Range(0, list.Count);
+            idx[i] = list[randomId];
+            list.RemoveAt(randomId);
+        }
+        return idx;
+    }
+
+    /// <summary>
+    /// Включить/Выключить Layout для анимации
+    /// </summary>
+    public static void SetLayoutActive(bool active)
     {
         GameObject.Find("Inner Field").GetComponent<LayoutGroup>().enabled = active;
-        foreach (var item in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "UnAssPosition"))
+        foreach (var item in FindChildrenWithTag(canvas, "UnAssPosition"))
             item.GetComponent<LayoutGroup>().enabled = active;
-        foreach (var item in FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "HandPosition"))
+        foreach (var item in FindChildrenWithTag(canvas, "HandPosition"))
             item.GetComponent<LayoutGroup>().enabled = active;
     }
+
 }
 class PlayerComparer : IComparer<PlayerControl>
 {

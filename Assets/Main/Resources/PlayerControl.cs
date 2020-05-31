@@ -1,5 +1,6 @@
-﻿using Photon.Pun;
-using System;
+﻿using ExitGames.Client.Photon;
+using Photon.Pun;
+using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,7 +10,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     Image bg;
     public int unAss;
     private int width = -1, height = -1;
-    public bool isPlayerTurn = false, isFieldClear = true, isReady = true;
+    public bool isPlayerTurn = false, isFieldClear = true, isReadyToStart = true;
     string imgBytes;
     void Start()
     {
@@ -34,13 +35,14 @@ public class PlayerControl : MonoBehaviour, IPunObservable
 
         unAss = (int)PhotonNetwork.CurrentRoom.CustomProperties["C3"];
         MapController.players.Add(this);
-        FindObjectOfType<MapController>().TryStartGame();
-
+        FindObjectOfType<MapController>().ArrangePlayers();
+        PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
     }
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         stream.Serialize(ref isPlayerTurn);
         stream.Serialize(ref isFieldClear);
+        stream.Serialize(ref isReadyToStart);
         //stream.Serialize(ref imgBytes);
         stream.Serialize(ref unAss);
     }
@@ -54,7 +56,6 @@ public class PlayerControl : MonoBehaviour, IPunObservable
         }
         catch{ }
         bg.color = isPlayerTurn ? new Color(0.329f, 0.878f, 0.22f) : Color.white;
-        //bg.color = isReady ? new Color(0.329f, 0.878f, 0.22f) : Color.red;
         //if (width != -1)
         //{
         //    Texture2D tex = new Texture2D(width, height, TextureFormat.RGB24, false);

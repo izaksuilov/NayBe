@@ -10,7 +10,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
     Image bg;
     public int unAss;
     private int width = -1, height = -1;
-    public bool isPlayerTurn = false, isFieldClear = true, isReadyToStart = true;
+    public bool isPlayerTurn = false, isFieldClear = false, isReadyToStart = true;
     string imgBytes;
     void Start()
     {

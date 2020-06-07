@@ -1,5 +1,4 @@
-﻿using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 
 public enum Events : byte
@@ -12,7 +11,8 @@ public enum Events : byte
     MoveCard,
     PlayerLeftRoom,
     ClearField,
-    PlayerWin
+    PlayerWin,
+    EnableField
 }
 public static class Settings
 {
@@ -20,12 +20,13 @@ public static class Settings
     
     #region Color
     public static int colorScheme { get; private set; } = 0;
-    public async static void SaveColor(int x)
+    public static void SaveColor(int x)
     {
         if (x < 0 || x > 3) return;
         colorScheme = x;
-        using (StreamWriter file = new StreamWriter(path, false))
-            await file.WriteLineAsync(colorScheme.ToString());
+        string[] file = File.ReadAllLines(path);
+        file[0] = colorScheme.ToString();
+        File.WriteAllLines(path, file);
     }
     #endregion
     #region NickName
@@ -34,8 +35,13 @@ public static class Settings
     {
         nickName = newName;
         string[] file = File.ReadAllLines(path);
-        file[1] = nickName;
-        File.WriteAllLines(path, file);
+        if (file.Length > 1)
+        {
+            file[1] = nickName;
+            File.WriteAllLines(path, file);
+        }
+        else File.AppendAllText(path, newName);
+
     }
     #endregion
     public async static void Load()
@@ -44,7 +50,8 @@ public static class Settings
         {
             string[] file = File.ReadAllLines(path);
             colorScheme = int.Parse(file[0]);
-            nickName = file[1];
+            if (file.Length > 1)
+                nickName = file[1];
         }
         else 
         {

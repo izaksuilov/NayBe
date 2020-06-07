@@ -147,6 +147,9 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 			$"AND (C2 >= {int.Parse(SearchBetFrom.text)} AND C2 <= {int.Parse(SearchBetTo.text)})";
 		Debug.Log(sqlLobbyFilter);
 	}
+	/// <summary>
+	/// Создать фильтр для поиска комнат
+	/// </summary>
 	void CreateSqlFilter(GameObject obj, string parameter, ref string s)
 	{
 		for (int i = 0; i < obj.transform.childCount; i++)

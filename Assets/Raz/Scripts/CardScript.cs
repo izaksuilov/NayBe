@@ -72,7 +72,6 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         newPos.z = 0;
         transform.position = newPos;
     }
-
     public void OnEndDrag(PointerEventData eventData)
     {
         if (!isDraggable) return;
@@ -160,7 +159,7 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         #endregion
 
         if (RazManager.isBeginningPhase && prevDefaultParent.GetComponent<DropPlaceScript>().Type == FieldType.FIELD &&
-            prevDefaultParent.childCount == 0)// если осталась одна карта, то начинается вторая фаза игры
+            prevDefaultParent.childCount == 0)// если не осталось карт, то начинается вторая фаза игры
             MapController.StartSecondPhase(thisCard.Suit);
     }
 }

@@ -30,7 +30,6 @@ public class HandScript : MonoBehaviour
                              })
                              .SelectMany(x => x.Cards)
                              .OrderBy(c => c.Suit.Equals(RazManager.ace));
-
         int j = 0;
         foreach (var card in sortedHand)
         {

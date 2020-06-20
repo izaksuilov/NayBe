@@ -79,16 +79,6 @@
     <Compile Include="Assets\Main\Scripts\SliderStep.cs" />
     <Compile Include="Assets\Main\Scripts\ToggleBtnTextColor.cs" />
     <Compile Include="Assets\Main\Scripts\ToggleGroupDisable.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\Common\EventSystemSpawner.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\Common\OnStartDelete.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\Common\TextButtonTransition.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\Common\TextToggleIsOnTransition.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\ChannelSelector.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\ChatAppIdCheckerUI.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\ChatGui.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\FriendItem.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\IgnoreUiRaycastWhenInactive.cs" />
-    <Compile Include="Assets\Photon\PhotonChat\Demos\DemoChat\NamePickGui.cs" />
     <Compile Include="Assets\Raz\Scripts\CardScript.cs" />
     <Compile Include="Assets\Raz\Scripts\DropPlaceScript.cs" />
     <Compile Include="Assets\Raz\Scripts\HandScript.cs" />
@@ -698,10 +688,6 @@
     <ProjectReference Include="PhotonUnityNetworking.csproj">
       <Project>{A166ABB4-4EEC-92A3-C321-5DA3D22E554C}</Project>
       <Name>PhotonUnityNetworking</Name>
-    </ProjectReference>
-    <ProjectReference Include="PhotonChat.csproj">
-      <Project>{8BFAD446-EC73-43A3-CC8D-8F7B73F76B7C}</Project>
-      <Name>PhotonChat</Name>
     </ProjectReference>
     <ProjectReference Include="PhotonUnityNetworking.Utilities.Culling.Editor.csproj">
       <Project>{F32C7E04-892B-9719-64A4-9FE92DDFD865}</Project>

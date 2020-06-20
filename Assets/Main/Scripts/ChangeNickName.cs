@@ -12,7 +12,7 @@ public class ChangeNickName : MonoBehaviour
     public void ChangeNick()
     {
         Settings.SaveNickName(GetComponent<InputField>().text);
-        if (CreateButton.interactable == false)
+        if (!CreateButton.interactable)
         {
             CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Создать комнату";
             CreateButton.interactable = true;

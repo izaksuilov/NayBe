@@ -31,6 +31,11 @@ public class SliderStep : MonoBehaviour
             case 16: value = 500000; break;
             case 17: value = 1000000; break;
         }
+        if (value > Settings.money)
+        {
+            slider.value = slider.value - 1;
+            return;
+        }
         GetComponent<Text>().text = value.ToString();
     }
 }

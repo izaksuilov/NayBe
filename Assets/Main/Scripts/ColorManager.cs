@@ -35,6 +35,6 @@ public class ColorManager : MonoBehaviour
             catch { obj.GetComponent<Text>().color = color; }
             Debug.Log(obj.name);
         }
-        Settings.SaveColor(colorScheme);
+        //Settings.SaveColor(colorScheme);
     }
 }

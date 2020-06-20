@@ -9,11 +9,11 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 {
-    #region Переменные
-    public string sqlLobbyFilter = "(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= 1000000)";
+	#region Переменные
+	public string sqlLobbyFilter;
 	[SerializeField] GameObject SettingsWindow, SearchGameWindow, CreateGameWindow, RazSettings, DurakSettings, Cards, SearchGames, SearchCards, RoomPrefab;
 	[SerializeField] Toggle SearchWindowButton;
-	[SerializeField] Text UnAss, UnAff, RoomName, MaxP, SearchBetFrom, SearchBetTo, Bet;
+	[SerializeField] Text UnAss, UnAff, RoomName, MaxP, SearchBetFrom, SearchBetTo, Bet, Money;
 	[SerializeField] Button CreateButton;
 	[SerializeField] Transform ListOfRooms;
 	string currentSelection;
@@ -28,6 +28,8 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Подключение...";
 		SearchWindowButton.interactable = CreateButton.interactable = false;
 		Settings.Load();
+		sqlLobbyFilter = $"(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= {Settings.money})";
+		Money.GetComponent<Text>().text = Settings.money + " руб";
 		#region Network
 		PhotonNetwork.NickName = Settings.nickName;
 		PhotonNetwork.NetworkingClient.LoadBalancingPeer.DisconnectTimeout = 100000;
@@ -42,6 +44,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Создать комнату";
 		SearchWindowButton.interactable = CreateButton.interactable = true;
 	}
+
 	/// <summary>
 	/// Создать комнату с выбранными параметрами
 	/// </summary>
@@ -74,6 +77,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	{
 		SceneManager.LoadScene(currentSelection);
 	}
+
 	/// <summary>
 	/// Событие срабатывает, когда был послан запрос на обновление списка комнат
 	/// </summary>
@@ -102,13 +106,14 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	{
 
 	}
+
 	/// <summary>
 	/// Открыть нужное окно 
 	/// </summary>
 	/// <param name="window">Название окна</param>
 	public void SelectWindow(string window)
 	{
-		StopCoroutine(RefreshRoomList());
+		StopCoroutine(RefreshRoomList(1));
 		SettingsWindow.SetActive(false); SearchGameWindow.SetActive(false); CreateGameWindow.SetActive(false);
 
 		if (window.Equals("Settings"))
@@ -116,11 +121,12 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		else if (window.Equals("Search"))
 		{
 			SearchGameWindow.SetActive(true);
-			StartCoroutine(RefreshRoomList());
+			StartCoroutine(RefreshRoomList(1));
 		}
 		else if (window.Equals("Create"))
 			CreateGameWindow.SetActive(true);
 	}
+
 	/// <summary>
 	/// Открыть нужную игру 
 	/// </summary>
@@ -135,6 +141,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		else if (currentSelection.Equals("Durak"))
 			DurakSettings.SetActive(true);
 	}
+
 	/// <summary>
 	/// Применить фильтр для поиска комнат
 	/// </summary>
@@ -147,6 +154,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 			$"AND (C2 >= {int.Parse(SearchBetFrom.text)} AND C2 <= {int.Parse(SearchBetTo.text)})";
 		Debug.Log(sqlLobbyFilter);
 	}
+
 	/// <summary>
 	/// Создать фильтр для поиска комнат
 	/// </summary>
@@ -157,10 +165,14 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 				s += $"{parameter} = \"{obj.transform.GetChild(i).name}\" OR ";
 		s = s.Remove(s.Length - 4) + ")";
 	}
-	IEnumerator RefreshRoomList()
+
+	/// <summary>
+	/// Обновлять список комнат каждые n секунд 
+	/// </summary>
+	IEnumerator RefreshRoomList(int seconds)
 	{
 		PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
-		yield return new WaitForSeconds(1);
-		StartCoroutine(RefreshRoomList());
+		yield return new WaitForSeconds(seconds);
+		StartCoroutine(RefreshRoomList(seconds));
 	}
 }

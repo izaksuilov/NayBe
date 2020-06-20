@@ -26,25 +26,29 @@ public class MapController : MonoBehaviour, IOnEventCallback
         // "синхронизация игрового процесса" 
         foreach (var player in players)
             if (!player.isFieldClear) goto skipEnablefield;
-        PhotonNetwork.RaiseEvent((byte)Events.EnableField, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+        PhotonNetwork.RaiseEvent((byte)Events.EnableField, null,
+            new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
 
         skipEnablefield:
 
         if (players.Count != PhotonNetwork.CurrentRoom.MaxPlayers) return;
 
         if (players.Count != PhotonNetwork.PlayerList.Length)
-            PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+            PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, null, 
+                new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
 
         foreach (var player in players)
             if (!player.isReadyToStart)
                 return;
 
         ArrangePlayers();
-        PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+        PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, 
+            new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
         if (players.Count == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
         {
             int[] data = CreateRandomIds();
-            PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
+            PhotonNetwork.RaiseEvent((byte)Events.StartFirstPhase, data, 
+                new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
             StartFirstPhase(data);
             myPlayer.isReadyToStart = false;    
         }
@@ -56,6 +60,10 @@ public class MapController : MonoBehaviour, IOnEventCallback
     private void StartFirstPhase(int[] idx)
     {
         myPlayer.isReadyToStart = false;
+
+        //вычесть у всех деньги, чтобы, даже если игрок выйдет, у него снялись деньги
+        Settings.AddMoney(-(int)PhotonNetwork.CurrentRoom.CustomProperties["C2"]);
+
         //создать нужное количество карт
         for (int i = 0; i < idx.Length; i++)
         {
@@ -64,12 +72,14 @@ public class MapController : MonoBehaviour, IOnEventCallback
             string[] name = cardsImage[idx[i]].name.Split('_');
             obj.GetComponent<CardScript>().CreateCard(new Card(obj, int.Parse(name[0]), name[1]));
         }
+
         switch (allCards.Count)
         {
             case 24: minCard = 9; break;
             case 36: minCard = 6; break;
             case 52: minCard = 2; break;
         }
+
         //положить каждому игроку соответствующее количество UnAss и положить одну карту
         players.Sort(new PlayerComparer());
         int cardIndex = idx.Length - 1, maxCard = -1, beginnerPlayer = -1;
@@ -85,6 +95,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
                 beginnerPlayer = players[a].GetComponent<PhotonView>().OwnerActorNr;
             }
         }
+
         //оставшиеся карты положить в центр
         while (cardIndex >= 0)
         {
@@ -301,6 +312,13 @@ public class MapController : MonoBehaviour, IOnEventCallback
                     if (players[i].GetComponent<PhotonView>().OwnerActorNr == acotrN)
                     {
                         players[i].isReadyToStart = false;
+                        if (players[i].GetComponent<PhotonView>().IsMine)
+                        {
+                            Settings.AddMoney((int)PhotonNetwork.CurrentRoom.CustomProperties["C2"] + 
+                                (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"] /
+                                PhotonNetwork.CurrentRoom.MaxPlayers * (players.Count - 1));
+                            Debug.LogWarning("Money");
+                        }
                         players.RemoveAt(i);
                         break;
                     }
@@ -309,6 +327,16 @@ public class MapController : MonoBehaviour, IOnEventCallback
                     players[0].unAss++;
                     SetLayoutActive(false);
                     StartCoroutine(EndGame(players[0].GetComponent<PhotonView>().Owner.NickName));
+
+                    if (players[0].GetComponent<PhotonView>().IsMine)
+                    {
+                        if (Settings.money < 100)
+                        {
+                            Settings.AddMoney(100 - Settings.money);
+                            new RazManager().Leave();
+                        }
+                        
+                    }
                 }
                 break;
             }
@@ -337,7 +365,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
                             foreach (var player in players)
                                 if (player.GetComponent<PhotonView>().OwnerActorNr == actorN)
                                 {
-                                    AttachCard(card, FindChildrenWithTag(player.transform.parent.parent.parent.gameObject, "HandPosition")[0].transform);
+                                    AttachCard(card, 
+                                        FindChildrenWithTag(player.transform.parent.parent.parent.gameObject,
+                                            "HandPosition")[0].transform);
                                     return;
                                 }
                         }

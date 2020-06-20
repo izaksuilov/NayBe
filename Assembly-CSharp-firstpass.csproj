@@ -666,10 +666,6 @@
       <Project>{A166ABB4-4EEC-92A3-C321-5DA3D22E554C}</Project>
       <Name>PhotonUnityNetworking</Name>
     </ProjectReference>
-    <ProjectReference Include="PhotonChat.csproj">
-      <Project>{8BFAD446-EC73-43A3-CC8D-8F7B73F76B7C}</Project>
-      <Name>PhotonChat</Name>
-    </ProjectReference>
     <ProjectReference Include="PhotonUnityNetworking.Utilities.Culling.Editor.csproj">
       <Project>{F32C7E04-892B-9719-64A4-9FE92DDFD865}</Project>
       <Name>PhotonUnityNetworking.Utilities.Culling.Editor</Name>

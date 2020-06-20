@@ -34,7 +34,6 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
         PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
         PhotonNetwork.LeaveRoom();
     }
-
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
     }

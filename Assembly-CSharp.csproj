@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Bank\Scripts\BankController.cs" />
     <Compile Include="Assets\Main\Resources\PlayerControl.cs" />
     <Compile Include="Assets\Main\Scripts\BetSlider.cs" />
     <Compile Include="Assets\Main\Scripts\CameraScript.cs" />

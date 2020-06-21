@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Net.NetworkInformation;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
@@ -18,7 +20,14 @@ public enum Events : byte
 }
 public static class Settings
 {
-    static string path = Application.persistentDataPath + "/settings.dat";
+    static string key = "",
+        path = Application.persistentDataPath + "/settings.dat",
+        macAddress = NetworkInterface
+            .GetAllNetworkInterfaces()
+            .Where(nic => nic.OperationalStatus == OperationalStatus.Up &&
+                   nic.NetworkInterfaceType != NetworkInterfaceType.Loopback)
+            .Select(nic => nic.GetPhysicalAddress().ToString())
+            .FirstOrDefault();
 
     #region Color
     public static int colorScheme { get; private set; } = 0;
@@ -43,17 +52,21 @@ public static class Settings
     public static void AddMoney(int m)
     {
         money += m;
-        SaveInFile(2, money.ToString());
+        SaveInFile(2, EncryptMoney());
     }
     #endregion
     public async static void Load()
     {
+        for (int i = 0; i < macAddress.Length; i++)
+            if (int.TryParse(macAddress[i].ToString(), out int result))
+                key += result;
+
         if (File.Exists(path))
         {
             string[] file = File.ReadAllLines(path);
             colorScheme = int.Parse(file[0]);
             nickName = file[1];
-            money = int.Parse(file[2]);
+            money = int.Parse(key) ^ DecryptMoney(file[2]);
         }
         else
         {
@@ -61,7 +74,7 @@ public static class Settings
             {
                 await file.WriteLineAsync(colorScheme.ToString());
                 await file.WriteLineAsync(nickName);
-                await file.WriteLineAsync(money.ToString());
+                await file.WriteLineAsync(EncryptMoney());
             }
         }
     }
@@ -70,5 +83,34 @@ public static class Settings
         string[] file = File.ReadAllLines(path);
         file[index] = obj;
         File.WriteAllLines(path, file);
+    }
+    private static string EncryptMoney()
+    {
+        string s = (int.Parse(key) ^ money).ToString(), ch = "", chars = "";
+        for (int i = 0; i < s.Length; i += 1)
+        {
+            ch += s[i];
+            if ((i+1) % 3 == 0)
+            {
+                chars += (char)int.Parse(ch);
+                ch = "";
+            }
+        }
+        if (!ch.Equals(""))
+            chars += (char)int.Parse(ch);
+        return chars;
+    }
+    private static int DecryptMoney(string encryptedMoney)
+    {
+        string s = "";
+        for (int i = 0; i < encryptedMoney.Length; i += 1)
+            s += (int)encryptedMoney[i];
+        Debug.Log(encryptedMoney[0]);
+        Debug.Log(EncryptMoney()[0]);
+        Debug.Log((int)encryptedMoney[0]);
+        Debug.Log((int)EncryptMoney()[0]);
+        Debug.Log(s);
+        Debug.Log(int.Parse(key) ^ money);
+        return int.Parse(s);
     }
 }

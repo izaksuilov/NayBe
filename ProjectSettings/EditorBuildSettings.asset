@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/N/Naybe.unity
     guid: 32de5cd5d3f56684c8d3982b9a9f77be
+  - enabled: 1
+    path: Assets/Bank/Bank.unity
+    guid: fe24cd3af63123b47870ea77437581f5
   m_configObjects: {}

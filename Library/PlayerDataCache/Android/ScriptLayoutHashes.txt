@@ -6,6 +6,7 @@ Assets/Main/Main.unity
 Assets/Raz/Raz.unity
 Assets/D/Durak.unity
 Assets/N/Naybe.unity
+Assets/Bank/Bank.unity
 SceneListEnd?
 1f74ed43dcd4b6debc2d1978f9f32eba Assembly-CSharp.dll:.DropPlaceScript
 71bb6a6b6c8f052f948db64c7dd3ca4f PhotonUnityNetworking.Utilities.dll:Photon.Pun.UtilityScripts.PunTeams
@@ -170,6 +171,7 @@ e0ee4b3d4e27318934cc940a969d3d96 UnityEngine.Networking.dll:UnityEngine.Networki
 ad9173d3a69d99153f38ed4b62226129 UnityEngine.Networking.dll:UnityEngine.Networking.NetworkTransform
 9b895dcabbc1faf095c000c32d471fd0 UnityEngine.Networking.dll:UnityEngine.Networking.NetworkTransformChild
 5887ef1bc706b22b773d253fd443ceef UnityEngine.Networking.dll:UnityEngine.Networking.NetworkTransformVisualizer
+bca1842d30e9ec710bd581cb38fc102c Assembly-CSharp.dll:.BankController
 4ce15e99c635d2567873d27549d1f16f PhotonUnityNetworking.Utilities.dll:Photon.Pun.UtilityScripts.PointedAtGameObjectInfo
 45c963b8e7743c8879d83d596618f20a Assembly-CSharp.dll:.ChangeNickName
 35a9693c388776aaf487636491a20f11 Unity.TextMeshPro.dll:TMPro.TMP_FontAsset

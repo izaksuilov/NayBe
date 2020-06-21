@@ -77,6 +77,10 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	{
 		SceneManager.LoadScene(currentSelection);
 	}
+	public void OpenBank()
+	{
+		SceneManager.LoadScene(4);
+	}
 
 	/// <summary>
 	/// Событие срабатывает, когда был послан запрос на обновление списка комнат

@@ -50,12 +50,6 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	/// </summary>
 	public void Create()
 	{
-		if (Settings.nickName.Equals(""))//проверяем, что пользователь ввёл ник
-		{
-			CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Введите Никнейм";
-			CreateButton.interactable = false;
-			return;
-		}
 		string cards = "";
 		for (int i = 0; i < Cards.transform.childCount-1; i++)//получаем выбранное количество карт
 			if (Cards.transform.GetChild(i).GetComponent<Toggle>().isOn)

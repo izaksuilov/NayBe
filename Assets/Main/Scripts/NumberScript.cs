@@ -11,5 +11,6 @@ public class NumberScript : MonoBehaviour
     public void ChangeNum()
     {
         GetComponent<Text>().text = slider.value.ToString();
+        //if (gameObject.name.Equals("Player Number") && slider.value )
     }
 }

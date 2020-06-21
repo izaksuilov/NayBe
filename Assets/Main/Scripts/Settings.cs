@@ -66,7 +66,7 @@ public static class Settings
             string[] file = File.ReadAllLines(path);
             colorScheme = int.Parse(file[0]);
             nickName = file[1];
-            money = int.Parse(key) ^ DecryptMoney(file[2]);
+            money = DecryptMoney(file[2]);
         }
         else
         {
@@ -105,12 +105,6 @@ public static class Settings
         string s = "";
         for (int i = 0; i < encryptedMoney.Length; i += 1)
             s += (int)encryptedMoney[i];
-        Debug.Log(encryptedMoney[0]);
-        Debug.Log(EncryptMoney()[0]);
-        Debug.Log((int)encryptedMoney[0]);
-        Debug.Log((int)EncryptMoney()[0]);
-        Debug.Log(s);
-        Debug.Log(int.Parse(key) ^ money);
-        return int.Parse(s);
+        return int.Parse(key) ^ int.Parse(s);
     }
 }

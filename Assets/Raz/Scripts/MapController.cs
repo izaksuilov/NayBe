@@ -9,7 +9,7 @@ using System.Collections;
 public class MapController : MonoBehaviour, IOnEventCallback
 {
     [SerializeField] Sprite[] cardsImage;//лицевые стороны карт
-    [SerializeField] GameObject cardPrefab, field, positions, otherPlayer, looserNick;
+    [SerializeField] GameObject cardPrefab, field, positions, otherPlayer;
     static GameObject canvas;
     static PlayerControl myPlayer;
     public static List<PlayerControl> players { get; private set; }
@@ -146,12 +146,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             allCards.Clear();
             players.Clear();
             if (nickname.Length != 0)
-            {
-                looserNick.SetActive(true);
-                looserNick.GetComponent<Text>().text = $"Проиграл {nickname}";
-                yield return new WaitForSeconds(3);
-                looserNick.SetActive(false);
-            }
+                Notification.ShowMessage($"Проиграл {nickname}", 3f);
             foreach (var player in FindChildrenWithTag(canvas, "Player"))
                 players.Add(player.GetComponent<PlayerControl>());
             myPlayer.isPlayerTurn = false;

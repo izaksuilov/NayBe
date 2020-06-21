@@ -34,6 +34,7 @@ public class SliderStep : MonoBehaviour
         if (value > Settings.money)
         {
             slider.value = slider.value - 1;
+            Notification.ShowMessage("У Вас недостаточно денег", 2f);
             return;
         }
         GetComponent<Text>().text = value.ToString();

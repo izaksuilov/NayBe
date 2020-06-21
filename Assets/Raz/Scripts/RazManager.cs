@@ -11,6 +11,8 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     void Awake()
     {
         Input.multiTouchEnabled = false;
+        if (Application.platform == RuntimePlatform.Android)
+            GameObject.Find("Leave").SetActive(false);
         isBeginningPhase = true;
         ace = "";
         FindObjectOfType<MapController>().MakePlaceForPlayers();

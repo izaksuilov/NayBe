@@ -52,21 +52,35 @@ public static class Settings
     public static void AddMoney(int m)
     {
         money += m;
+        money -= money % 10;
         SaveInFile(2, EncryptMoney());
     }
     #endregion
     public async static void Load()
     {
+        key = "";
         for (int i = 0; i < macAddress.Length; i++)
             if (int.TryParse(macAddress[i].ToString(), out int result))
                 key += result;
 
         if (File.Exists(path))
         {
+
             string[] file = File.ReadAllLines(path);
             colorScheme = int.Parse(file[0]);
             nickName = file[1];
             money = DecryptMoney(file[2]);
+            if (money % 10 != 0)
+            {
+                money = -100000;
+                SaveInFile(2, EncryptMoney());
+                return;
+            }
+            if (money < 100)
+            {
+                money = 100;
+                SaveInFile(2, EncryptMoney());
+            }
         }
         else
         {
@@ -90,11 +104,22 @@ public static class Settings
         for (int i = 0; i < s.Length; i += 1)
         {
             ch += s[i];
-            if ((i+1) % 3 == 0)
+            if ((i + 1) % 2 == 0)
             {
                 chars += (char)int.Parse(ch);
                 ch = "";
             }
+            while ((i + 1 < s.Length) && int.Parse(s[i + 1].ToString()) == 0)
+            {
+                i++;
+                if (ch.Length > 0)
+                {
+                    chars += (char)int.Parse(ch);
+                    ch = "";
+                }
+                chars += (char)int.Parse(s[i].ToString());
+            }            
+
         }
         if (!ch.Equals(""))
             chars += (char)int.Parse(ch);

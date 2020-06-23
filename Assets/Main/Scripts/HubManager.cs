@@ -13,7 +13,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	public string sqlLobbyFilter;
 	[SerializeField] GameObject SettingsWindow, SearchGameWindow, CreateGameWindow, RazSettings, DurakSettings, Cards, SearchGames, SearchCards, RoomPrefab;
 	[SerializeField] Toggle SearchWindowButton;
-	[SerializeField] Text UnAss, UnAff, RoomName, MaxP, SearchBetFrom, SearchBetTo, Bet, Money;
+	[SerializeField] Text UnAss, UnAff, RoomName, MaxP, SearchBetFrom, SearchBetTo, Bet;
 	[SerializeField] Button CreateButton;
 	[SerializeField] Transform ListOfRooms;
 	string currentSelection;
@@ -29,7 +29,8 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		SearchWindowButton.interactable = CreateButton.interactable = false;
 		Settings.Load();
 		sqlLobbyFilter = $"(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= {Settings.money})";
-		Money.GetComponent<Text>().text = Settings.money + " руб";
+		GameObject.Find("Text Money").GetComponent<Text>().text = $"{Settings.money} руб";
+		GameObject.Find("Text Lvl").GetComponent<Text>().text = $"Lvl {Settings.lvl}";
 		#region Network
 		PhotonNetwork.NickName = Settings.nickName;
 		PhotonNetwork.NetworkingClient.LoadBalancingPeer.DisconnectTimeout = 100000;

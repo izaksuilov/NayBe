@@ -1,8 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
 public enum Events : byte
@@ -20,14 +17,8 @@ public enum Events : byte
 }
 public static class Settings
 {
-    static string key = "",
-        path = Application.persistentDataPath + "/settings.dat",
-        macAddress = NetworkInterface
-            .GetAllNetworkInterfaces()
-            .Where(nic => nic.OperationalStatus == OperationalStatus.Up &&
-                   nic.NetworkInterfaceType != NetworkInterfaceType.Loopback)
-            .Select(nic => nic.GetPhysicalAddress().ToString())
-            .FirstOrDefault();
+    static string path = Application.persistentDataPath + "/settings.dat";
+    static int key = 228069;
 
     #region Color
     public static int colorScheme { get; private set; } = 0;
@@ -48,49 +39,83 @@ public static class Settings
     }
     #endregion
     #region Money
-    public static int money { get; private set; } = 1000;
+    public static int money { get; private set; } = 10000;
+    public static int lvl { get; private set; } = 1;
+    public static int nextLvlExp { get; private set; } = 100;
+    public static int progress { get; private set; } = 0;
     public static void AddMoney(int m)
     {
-        money += m;
+        int prevMoney = money;
+        try
+        { money = checked(money + m); }
+        catch (System.OverflowException)
+        { money = int.MaxValue;  }
         money -= money % 10;
-        SaveInFile(2, EncryptMoney());
+        if (money < 0)
+            money = 0;
+        SaveInFile(2, Encrypt(money));
+
+        if (m > 0)
+        {
+            try
+            { 
+                nextLvlExp = checked((int)Math.Pow(lvl, 1.75) * 100);
+                progress = checked(progress + 
+                    (int)((m > 1000 ? m / 10 : m) * (lvl / 10 + 1.25)));
+            }
+            catch (System.OverflowException)
+            {
+                nextLvlExp = int.MaxValue;
+                progress = 0;
+            }
+            if (progress >= nextLvlExp)
+            {
+                lvl++;
+                progress %= nextLvlExp;
+                SaveInFile(3, Encrypt(lvl));
+                nextLvlExp = (int)Math.Pow(lvl, 1.75) * 100;
+                SaveInFile(4, Encrypt(nextLvlExp));
+                try
+                { money = checked(money + lvl * 1000); }
+                catch (System.OverflowException)
+                { money = int.MaxValue; }
+                SaveInFile(2, Encrypt(money));
+            }
+            SaveInFile(5, Encrypt(progress));
+        }
     }
     #endregion
-    public async static void Load()
+    public static void Load()
     {
-        key = "";
-        for (int i = 0; i < macAddress.Length; i++)
-            if (int.TryParse(macAddress[i].ToString(), out int result))
-                key += result;
-
         if (File.Exists(path))
         {
-
+            if (File.ReadAllLines(path).Length != 6)
+            {
+                File.Delete(path);
+                CreateFile();
+                return;
+            }
             string[] file = File.ReadAllLines(path);
             colorScheme = int.Parse(file[0]);
             nickName = file[1];
-            money = DecryptMoney(file[2]);
-            if (money % 10 != 0)
-            {
-                money = -100000;
-                SaveInFile(2, EncryptMoney());
-                return;
-            }
+            money = Decrypt(file[2]);
             if (money < 100)
             {
                 money = 100;
-                SaveInFile(2, EncryptMoney());
+                SaveInFile(2, Encrypt(money));
             }
+            if (money % 10 != 0)
+            {
+                File.Delete(path);
+                Load();
+            }
+            lvl = Decrypt(file[3]);
+            nextLvlExp = Decrypt(file[4]);
+            progress = Decrypt(file[5]);
         }
         else
-        {
-            using (StreamWriter file = new StreamWriter(path, true))
-            {
-                await file.WriteLineAsync(colorScheme.ToString());
-                await file.WriteLineAsync(nickName);
-                await file.WriteLineAsync(EncryptMoney());
-            }
-        }
+            CreateFile();
+
     }
     private static void SaveInFile(int index, string obj)
     {
@@ -98,9 +123,21 @@ public static class Settings
         file[index] = obj;
         File.WriteAllLines(path, file);
     }
-    private static string EncryptMoney()
+    private async static void CreateFile()
     {
-        string s = (int.Parse(key) ^ money).ToString(), ch = "", chars = "";
+        using (StreamWriter stream = new StreamWriter(path, true))
+        {
+            await stream.WriteLineAsync(colorScheme.ToString());
+            await stream.WriteLineAsync(nickName);
+            await stream.WriteLineAsync(Encrypt(money));
+            await stream.WriteLineAsync(Encrypt(lvl));
+            await stream.WriteLineAsync(Encrypt(nextLvlExp));
+            await stream.WriteLineAsync(Encrypt(progress));
+        }
+    }
+    private static string Encrypt(int num)
+    {
+        string s = (key ^ num).ToString(), ch = "", chars = "";
         for (int i = 0; i < s.Length; i += 1)
         {
             ch += s[i];
@@ -125,11 +162,11 @@ public static class Settings
             chars += (char)int.Parse(ch);
         return chars;
     }
-    private static int DecryptMoney(string encryptedMoney)
+    private static int Decrypt(string encryptedObj)
     {
         string s = "";
-        for (int i = 0; i < encryptedMoney.Length; i += 1)
-            s += (int)encryptedMoney[i];
-        return int.Parse(key) ^ int.Parse(s);
+        for (int i = 0; i < encryptedObj.Length; i += 1)
+            s += (int)encryptedObj[i];
+        return key ^ int.Parse(s);
     }
 }

@@ -1607,7 +1607,6 @@ MonoBehaviour:
   SearchBetFrom: {fileID: 1415709386}
   SearchBetTo: {fileID: 1783828308}
   Bet: {fileID: 2020313588}
-  Money: {fileID: 744423397}
   CreateButton: {fileID: 1199143366}
   ListOfRooms: {fileID: 1074300639}
 --- !u!114 &141898138

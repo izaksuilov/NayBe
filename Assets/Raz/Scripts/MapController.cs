@@ -68,6 +68,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         for (int i = 0; i < idx.Length; i++)
         {
             GameObject obj = Instantiate(cardPrefab);
+            obj.GetComponent<CardScript>().enabled = true;
             obj.transform.GetChild(0).GetChild(1).GetComponent<Image>().sprite = cardsImage[idx[i]];
             string[] name = cardsImage[idx[i]].name.Split('_');
             obj.GetComponent<CardScript>().CreateCard(new Card(obj, int.Parse(name[0]), name[1]));
@@ -322,16 +323,6 @@ public class MapController : MonoBehaviour, IOnEventCallback
                     players[0].unAss++;
                     SetLayoutActive(false);
                     StartCoroutine(EndGame(players[0].GetComponent<PhotonView>().Owner.NickName));
-
-                    if (players[0].GetComponent<PhotonView>().IsMine)
-                    {
-                        if (Settings.money < 100)
-                        {
-                            Settings.AddMoney(100 - Settings.money);
-                            new RazManager().Leave();
-                        }
-                        
-                    }
                 }
                 break;
             }

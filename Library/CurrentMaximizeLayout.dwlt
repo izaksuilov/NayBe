@@ -21,10 +21,10 @@ MonoBehaviour:
     y: 30
     width: 1280
     height: 635
-  m_MinSize: {x: 879, y: 474}
-  m_MaxSize: {x: 16004, y: 14048}
+  m_MinSize: {x: 881, y: 498}
+  m_MaxSize: {x: 16006, y: 14048}
   vertical: 1
-  controlID: 11672
+  controlID: 513
 --- !u!114 &2
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -128,10 +128,10 @@ MonoBehaviour:
     y: 0
     width: 1280
     height: 361
-  m_MinSize: {x: 879, y: 200}
-  m_MaxSize: {x: 16004, y: 4024}
+  m_MinSize: {x: 881, y: 224}
+  m_MaxSize: {x: 16006, y: 4024}
   vertical: 0
-  controlID: 11653
+  controlID: 449
 --- !u!114 &4
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -189,7 +189,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: 9c92fcffa09bfcffb89bfcff189dfcff1c9dfcff209dfcff2e9dfcff5a9dfcff52a1fcff6aa1fcffcaa2fcffcea2fcffd2a2fcffe0a2fcff0ca3fcff60a3fcfffa1dfeff081efeffca21feffea21feff182dfeff5831feff7031feffd032feffd432feffd832feffe632feff1233feff1036feff2836feff8837feff8c37feff9037feff9e37feffca37feff4a3cfeff623cfeffc23dfeffca3dfeffd23dfeffe23dfeff103efeff2a80feff6c80feff8680feffe881feffec81fefff081feff0282feff0682feff4887feff6287feffc488feffc888feffcc88feffde88feffe288feff209afeff3a9afeff9c9bfeffa09bfeffa49bfeffb69bfeffba9bfeff689dfeff829dfeff849dfeff889dfeff8c9dfeff909dfeff949dfeff4c9efeff669efeffc89ffeffcc9ffeffd09ffeffe29ffeffe69ffeff5ab0feff74b0feffd6b1feffdab1feffdeb1fefff0b1fefff4b1feff04b6feff1eb6feff84b7feff8cb7feff94b7feffaab7feffb2b7feff0ab8feffceccfeff74f9ffff90f9fffff6fafffffafafffffefaffff10fbffff14fbffffdefbffffaadd0000bcdd00001cde000032920200c4920200f493020098940200e894020024950200c495020000990200beb90200
+      m_ExpandedIDs: defbffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -232,8 +232,8 @@ MonoBehaviour:
     y: 0
     width: 278
     height: 361
-  m_MinSize: {x: 204, y: 224}
-  m_MaxSize: {x: 4004, y: 4024}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 7}
   m_Panes:
   - {fileID: 7}
@@ -915,10 +915,10 @@ MonoBehaviour:
     y: 361
     width: 1280
     height: 274
-  m_MinSize: {x: 332, y: 274}
-  m_MaxSize: {x: 14002, y: 10024}
+  m_MinSize: {x: 334, y: 274}
+  m_MaxSize: {x: 14004, y: 10024}
   vertical: 0
-  controlID: 11673
+  controlID: 514
 --- !u!114 &18
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -938,8 +938,8 @@ MonoBehaviour:
     y: 0
     width: 788
     height: 274
-  m_MinSize: {x: 230, y: 250}
-  m_MaxSize: {x: 10000, y: 10000}
+  m_MinSize: {x: 232, y: 274}
+  m_MaxSize: {x: 10002, y: 10024}
   m_ActualView: {fileID: 20}
   m_Panes:
   - {fileID: 19}
@@ -1013,19 +1013,19 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Main
+    - Assets/Bank/Scripts
   m_ViewMode: 1
   m_StartGridSize: 96
   m_LastFolders:
-  - Assets/Main
+  - Assets/Bank/Scripts
   m_LastFoldersGridSize: 96
   m_LastProjectPath: C:\Program Files\Unity Hub\NayBe
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: fe280000
-    m_LastClickedID: 10494
+    m_SelectedIDs: e2290000
+    m_LastClickedID: 10722
     m_ExpandedIDs: 000000009c2700008c280000fe280000a6290000502a0000742a0000a62a00003e34000040340000423400004434000046340000483400004a3400004c3400004e340000503400005234000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0

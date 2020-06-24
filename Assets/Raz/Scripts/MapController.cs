@@ -62,7 +62,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
         myPlayer.isReadyToStart = false;
 
         //вычесть у всех деньги, чтобы, даже если игрок выйдет, у него снялись деньги
-        Settings.AddMoney(-(int)PhotonNetwork.CurrentRoom.CustomProperties["C2"]);
+        Settings.Money -= (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"];
 
         //создать нужное количество карт
         for (int i = 0; i < idx.Length; i++)
@@ -147,7 +147,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             allCards.Clear();
             players.Clear();
             if (nickname.Length != 0)
-                Notification.ShowMessage($"Проиграл {nickname}", 3f);
+                Notification.Show($"Проиграл {nickname}", 3f);
             foreach (var player in FindChildrenWithTag(canvas, "Player"))
                 players.Add(player.GetComponent<PlayerControl>());
             myPlayer.isPlayerTurn = false;
@@ -310,9 +310,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
                         players[i].isReadyToStart = false;
                         if (players[i].GetComponent<PhotonView>().IsMine)
                         {
-                            Settings.AddMoney((int)PhotonNetwork.CurrentRoom.CustomProperties["C2"] + 
-                                (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"] /
-                                PhotonNetwork.CurrentRoom.MaxPlayers * (players.Count - 1));
+                            Settings.Money += (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"] + 
+                                              (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"] /
+                                               PhotonNetwork.CurrentRoom.MaxPlayers * (players.Count - 1);
                             Debug.LogWarning("Money");
                         }
                         players.RemoveAt(i);

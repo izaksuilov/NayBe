@@ -7,16 +7,17 @@ public class ChangeNickName : MonoBehaviour
     [SerializeField] private Button CreateButton;
     void Start()
     {
-        GetComponent<InputField>().text = Settings.nickName;
+        GetComponent<InputField>().text = Settings.NickName;
     }
     public void ChangeNick()
     {
-        Settings.SaveNickName(GetComponent<InputField>().text);
+        if (GetComponent<InputField>().text.Length < 1) return;
+        Settings.NickName = GetComponent<InputField>().text;
         if (!CreateButton.interactable)
         {
             CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Создать комнату";
             CreateButton.interactable = true;
         }
-        PhotonNetwork.NickName = Settings.nickName;
+        PhotonNetwork.NickName = Settings.NickName;
     }
 }

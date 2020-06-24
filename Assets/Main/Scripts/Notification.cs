@@ -2,44 +2,62 @@
 using UnityEngine;
 using UnityEngine.UI;
 public class Notification : MonoBehaviour {
+    public enum Color
+    {
+        good,
+        bad
+    }
     public enum Position
     {
         top,
         bottom
     };
-    public static void ShowMessage ( string msg, float time = 1f, Notification.Position position = Notification.Position.top )
+    public static void Show ( string msg, float time = 1f, Notification.Position position = Notification.Position.top, Notification.Color color = Notification.Color.bad )
     {
-        if (GameObject.Find("Message(Clone)") != null) return;
-        GameObject messagePrefab = Resources.Load("Message") as GameObject;
-        //Get container object of message
-        GameObject containerObject = messagePrefab.gameObject.transform.GetChild ( 0 ).gameObject;
-        //Get text object
-        GameObject textObject = containerObject.gameObject.transform.GetChild ( 0 ).GetChild ( 0 ).gameObject;
-        //Get text property
-        Text msg_text = textObject.GetComponent<Text> ( );
-        //Set message to text ui
-        msg_text.text = msg;
-        //Set position of container object of message
-        SetPosition ( containerObject.GetComponent<RectTransform> ( ), position );
-        //Spawn message object with all changes
-        GameObject clone = Instantiate (messagePrefab);
-        // Destroy clone of message object according to the time
+        if (GameObject.Find("Notification(Clone)") != null) return;
+        GameObject notificationPrefab = Resources.Load("Notification") as GameObject,
+                   container = notificationPrefab.gameObject.transform.GetChild(0).gameObject;
+        container.gameObject.transform.GetChild(0).GetChild(0).gameObject.GetComponent<Text>().text = msg;
+        SetPosition(container.GetComponent<RectTransform>(), position);
+        SetColor(container.transform.GetChild(0).GetComponent<Image>(), color);
+        GameObject clone = Instantiate (notificationPrefab);
         Destroy(clone.gameObject, time);
     }
 
     private static void SetPosition ( RectTransform rectTransform, Position position )
     {
-        if (position == Position.top)
+        switch(position)
         {
-            rectTransform.anchorMin = new Vector2 ( 0.5f, 1f );
-            rectTransform.anchorMax = new Vector2 ( 0.5f, 1f );
-            rectTransform.anchoredPosition = new Vector3 ( 0.5f, -150, 0 );
+            case Position.top:
+            {
+                rectTransform.anchorMin = new Vector2(0.5f, 1f);
+                rectTransform.anchorMax = new Vector2(0.5f, 1f);
+                rectTransform.anchoredPosition = new Vector3(0.5f, -150, 0);
+                break;
+            }
+            case Position.bottom:
+            {
+                rectTransform.anchorMin = new Vector2(0.5f, 0);
+                rectTransform.anchorMax = new Vector2(0.5f, 0);
+                rectTransform.anchoredPosition = new Vector3(0.5f, 150, 0);
+                break;
+            }
         }
-        else
+    }
+    private static void SetColor(Image bg, Color color)
+    {
+        switch (color)
         {
-            rectTransform.anchorMin = new Vector2 ( 0.5f, 0 );
-            rectTransform.anchorMax = new Vector2 ( 0.5f, 0 );
-            rectTransform.anchoredPosition = new Vector3 ( 0.5f, 150, 0 );
+            case Color.good:
+            {
+                bg.color = new Color32(29, 90, 17, 255);
+                break;
+            }
+            case Color.bad:
+            {
+                bg.color = new Color32(90, 17, 19, 255);
+                break;
+            }
         }
     }
 }

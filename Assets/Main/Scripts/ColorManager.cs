@@ -11,7 +11,7 @@ public class ColorManager : MonoBehaviour
                             textOnBgColor =    { new Color32(31 , 17 , 52 , 255), new Color32(231, 217, 252, 255) };
     private void Update()
     {
-        ApplyColor(Settings.colorScheme);
+        ApplyColor(Settings.ColorScheme);
     }
     public void ApplyColor(int colorScheme)
     {
@@ -24,17 +24,17 @@ public class ColorManager : MonoBehaviour
                 color = obj.GetComponent<Text>().color;
             else continue;
 
-            if (color == bgColor[Settings.colorScheme]) color = bgColor[colorScheme];
-            else if (color == activeColor[Settings.colorScheme]) color = activeColor[colorScheme];
-            else if (color == additionalColor1[Settings.colorScheme]) color = additionalColor1[colorScheme];
-            else if (color == additionalColor2[Settings.colorScheme]) color = additionalColor2[colorScheme];
-            else if (color == textColor[Settings.colorScheme]) color = textColor[colorScheme];
-            else if (color == textOnBgColor[Settings.colorScheme]) color = textOnBgColor[colorScheme];
+            if (color == bgColor[Settings.ColorScheme]) color = bgColor[colorScheme];
+            else if (color == activeColor[Settings.ColorScheme]) color = activeColor[colorScheme];
+            else if (color == additionalColor1[Settings.ColorScheme]) color = additionalColor1[colorScheme];
+            else if (color == additionalColor2[Settings.ColorScheme]) color = additionalColor2[colorScheme];
+            else if (color == textColor[Settings.ColorScheme]) color = textColor[colorScheme];
+            else if (color == textOnBgColor[Settings.ColorScheme]) color = textOnBgColor[colorScheme];
 
             try { obj.GetComponent<Image>().color = color; }
             catch { obj.GetComponent<Text>().color = color; }
             Debug.Log(obj.name);
         }
-        //Settings.SaveColor(colorScheme);
+        Settings.ColorScheme = colorScheme;
     }
 }

@@ -20,7 +20,7 @@ public class BankController : MonoBehaviour
             GameObject.Find("Leave").SetActive(false);
 
         playerPref.GetComponent<PlayerControl>().enabled = false;
-        playerPref.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = Settings.nickName;
+        playerPref.transform.GetChild(2).GetChild(0).GetComponent<Text>().text = Settings.NickName;
 
         RawImage image = playerPref.transform.GetChild(1).GetComponent<RawImage>();
         string directoryPath = Application.persistentDataPath + "/avatar.jpg";
@@ -46,8 +46,8 @@ public class BankController : MonoBehaviour
         isUsualMode = usualGame.GetComponent<Toggle>().isOn;
         bet = int.Parse(GameObject.Find("Bet Number").GetComponent<Text>().text);
         options.SetActive(false);
-        prize = isUsualMode ? bet * 2 : bet * 5;
-        Settings.AddMoney(-bet);
+        prize = isUsualMode ? bet * 2 : bet * 3;
+        Settings.Money -= bet;
         UpdateText(true);
         field.SetActive(true);
 
@@ -72,8 +72,8 @@ public class BankController : MonoBehaviour
     }
     private void UpdateText(bool showBet = false, string text = "")
     {
-        lvl.text = $"Lvl {Settings.lvl} ({Settings.progress}/{Settings.nextLvlExp})";
-        money.text = $"У вас {Settings.money} рублей";
+        lvl.text = $"Lvl {Settings.Lvl} ({Settings.Progress}/{Settings.NextLvlExp})";
+        money.text = $"У вас {Settings.Money} рублей";
         if (showBet) money.text += $"\nСтавка: {bet} рублей";
         if (text.Length > 0)
             money.text = text;
@@ -147,26 +147,27 @@ public class BankController : MonoBehaviour
     }
     private void PlayerWin()
     {
-        Settings.AddMoney(prize);
-        UpdateText(text: $"Победа! Вы выиграли {prize} рублей!");
+        Settings.Money += prize;
+        Settings.Progress += isUsualMode ? Settings.Step : Settings.Step * 2;
+        UpdateText(text: $"Победа!\nВы выиграли {prize} рублей!");
         StartCoroutine(RepeatGame());
     }
 
     private void PlayerLost()
     {
-        UpdateText(text: $"Поражение! Вы проиграли {bet} рублей!");
+        UpdateText(text: $"Поражение!\nВы проиграли {bet} рублей!");
         StartCoroutine(RepeatGame());
     }
     private void Draw()
     {
-        Settings.AddMoney(bet / 2);
-        UpdateText(text: $"Ничья! Вы проиграли {bet/2} рублей!");
+        Settings.Money += bet/2;
+        Settings.Progress += Settings.Step / 2;
+        UpdateText(text: $"Ничья!\nВы проиграли {bet/2} рублей!");
         StartCoroutine(RepeatGame());
     }
-    
     private IEnumerator RepeatGame()
     {
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(2);
         foreach (var card in MapController.FindChildrenWithTag(FindObjectOfType<Canvas>().gameObject, "Card"))
             Destroy(card);
         Settings.Load();

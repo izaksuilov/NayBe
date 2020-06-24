@@ -28,11 +28,11 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Подключение...";
 		SearchWindowButton.interactable = CreateButton.interactable = false;
 		Settings.Load();
-		sqlLobbyFilter = $"(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= {Settings.money})";
-		GameObject.Find("Text Money").GetComponent<Text>().text = $"{Settings.money} руб";
-		GameObject.Find("Text Lvl").GetComponent<Text>().text = $"Lvl {Settings.lvl}";
+		sqlLobbyFilter = $"(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= {Settings.Money})";
+		GameObject.Find("Text Money").GetComponent<Text>().text = $"{Settings.Money} руб";
+		GameObject.Find("Text Lvl").GetComponent<Text>().text = $"Lvl {Settings.Lvl}";
 		#region Network
-		PhotonNetwork.NickName = Settings.nickName;
+		PhotonNetwork.NickName = Settings.NickName;
 		PhotonNetwork.NetworkingClient.LoadBalancingPeer.DisconnectTimeout = 100000;
 		PhotonNetwork.AutomaticallySyncScene = true;
 		PhotonNetwork.ConnectUsingSettings();
@@ -64,7 +64,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 			roomOptions.CustomRoomProperties.Add("C3", int.Parse(UnAff.text));
 		roomOptions.CustomRoomPropertiesForLobby = new string[] { "C0", "C1", "C2" };
 		roomOptions.MaxPlayers = byte.Parse(MaxP.text);
-		PhotonNetwork.CreateRoom(RoomName.text.Equals("") ? Settings.nickName : RoomName.text,
+		PhotonNetwork.CreateRoom(RoomName.text.Equals("") ? Settings.NickName : RoomName.text,
 								 roomOptions,
 								 new TypedLobby("myLobby", LobbyType.SqlLobby));
 	}

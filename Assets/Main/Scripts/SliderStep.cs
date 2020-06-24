@@ -31,10 +31,10 @@ public class SliderStep : MonoBehaviour
             case 16: value = 500000; break;
             case 17: value = 1000000; break;
         }
-        if (value > Settings.money)
+        if (value > Settings.Money)
         {
             slider.value = slider.value - 1;
-            Notification.ShowMessage("У Вас недостаточно денег", 2f);
+            Notification.Show("У Вас недостаточно денег", 2f);
             return;
         }
         GetComponent<Text>().text = value.ToString();

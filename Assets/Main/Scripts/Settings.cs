@@ -17,123 +17,133 @@ public enum Events : byte
 }
 public static class Settings
 {
-    static string path = Application.persistentDataPath + "/settings.dat";
-    static int key = 228069;
-
-    #region Color
-    public static int colorScheme { get; private set; } = 0;
-    public static void SaveColor(int x)
+    #region Переменные
+    static string path = Application.persistentDataPath + "/settings.dat",
+                  _nickName = "Игрок";
+    static int key = 228069, _colorScheme = 0, _money = 1000, _progress = 0, _lvl = 1;
+    public static int ColorScheme 
     {
-        if (x < 0 || x > 3) return;
-        colorScheme = x;
-        SaveInFile(0, colorScheme.ToString());
+        get { return _colorScheme; }
+        set
+        {
+            if (value < 0 || value > 3) throw new ArgumentOutOfRangeException("Color scheme should be >= 0 and <= 3");
+            _colorScheme = value;
+            SaveFile();
+        }
     }
-    #endregion
-    #region NickName
-    public static string nickName { get; private set; } = "Игрок";
-    public static void SaveNickName(string newName)
+    public static string NickName
     {
-        if (newName.Length < 1) return;
-        nickName = newName;
-        SaveInFile(1, newName);
+        get { return _nickName; }
+        set
+        {
+            if (value.Length < 1) throw new ArgumentException("Nickname can't be empty");
+            _nickName = value;
+            SaveFile();
+        }
     }
-    #endregion
-    #region Money
-    public static int money { get; private set; } = 10000;
-    public static int lvl { get; private set; } = 1;
-    public static int nextLvlExp { get; private set; } = 100;
-    public static int progress { get; private set; } = 0;
-    public static void AddMoney(int m)
+    public static int Money
     {
-        int prevMoney = money;
-        try
-        { money = checked(money + m); }
-        catch (System.OverflowException)
-        { money = int.MaxValue;  }
-        money -= money % 10;
-        if (money < 0)
-            money = 0;
-        SaveInFile(2, Encrypt(money));
-
-        if (m > 0)
+        get { return _money; }
+        set 
         {
             try
-            { 
-                nextLvlExp = checked((int)Math.Pow(lvl, 1.75) * 100);
-                progress = checked(progress + 
-                    (int)((m > 1000 ? m / 10 : m) * (lvl / 10 + 1.25)));
+            { _money = checked(value); }
+            catch (System.OverflowException)
+            { _money = int.MaxValue; }
+            _money -= _money % 10;
+            if (_money < 0)
+                _money = 0;
+            SaveFile();
+        }
+    }
+    public static int Lvl 
+    {
+        get { return _lvl; } 
+        private set
+        {
+            _lvl = value;
+            Step = NextLvlExp / _lvl;
+        }
+    }
+    public static int NextLvlExp { get; private set; } = 100;
+    public static int Step { get; private set; } = 50;
+    public static int Progress 
+    {
+        get { return _progress; } 
+        set
+        {
+            try
+            {
+                NextLvlExp = checked((int)Math.Pow(Lvl, 1.75) * 100);
+                _progress = checked(value);
             }
             catch (System.OverflowException)
             {
-                nextLvlExp = int.MaxValue;
-                progress = 0;
+                NextLvlExp = int.MaxValue;
+                _progress = 0;
             }
-            if (progress >= nextLvlExp)
+            if (_progress >= NextLvlExp)
             {
-                lvl++;
-                progress %= nextLvlExp;
-                SaveInFile(3, Encrypt(lvl));
-                nextLvlExp = (int)Math.Pow(lvl, 1.75) * 100;
-                SaveInFile(4, Encrypt(nextLvlExp));
+                Lvl++;
+                _progress %= NextLvlExp;
+                NextLvlExp = (int)Math.Pow(Lvl, 1.75) * 100;
+
                 try
-                { money = checked(money + lvl * 1000); }
+                { _money = checked(_money + _lvl * 1000); }
                 catch (System.OverflowException)
-                { money = int.MaxValue; }
-                SaveInFile(2, Encrypt(money));
+                { _money = int.MaxValue; }
+                Notification.Show($"Новый уровень!\nВы получаете {_lvl * 1000} рублей!", 2, Notification.Position.bottom, Notification.Color.good);
             }
-            SaveInFile(5, Encrypt(progress));
+            SaveFile();
         }
     }
+    static string[] objToSave = { ColorScheme.ToString(),
+                                  NickName,
+                                  Encrypt(Money),
+                                  Encrypt(Lvl),
+                                  Encrypt(NextLvlExp),
+                                  Encrypt(Progress) };
     #endregion
     public static void Load()
     {
         if (File.Exists(path))
         {
-            if (File.ReadAllLines(path).Length != 6)
+            if (File.ReadAllLines(path).Length != objToSave.Length)
             {
                 File.Delete(path);
                 CreateFile();
                 return;
             }
             string[] file = File.ReadAllLines(path);
-            colorScheme = int.Parse(file[0]);
-            nickName = file[1];
-            money = Decrypt(file[2]);
-            if (money < 100)
-            {
-                money = 100;
-                SaveInFile(2, Encrypt(money));
-            }
-            if (money % 10 != 0)
-            {
-                File.Delete(path);
-                Load();
-            }
-            lvl = Decrypt(file[3]);
-            nextLvlExp = Decrypt(file[4]);
-            progress = Decrypt(file[5]);
+            ColorScheme = int.Parse(file[0]);
+            NickName = file[1];
+            Money = Decrypt(file[2]);
+            Lvl = Decrypt(file[3]);
+            NextLvlExp = Decrypt(file[4]);
+            Progress = Decrypt(file[5]);
         }
         else
             CreateFile();
-
     }
-    private static void SaveInFile(int index, string obj)
+    private static void SaveFile()
     {
-        string[] file = File.ReadAllLines(path);
-        file[index] = obj;
-        File.WriteAllLines(path, file);
+        objToSave = new string[] { ColorScheme.ToString(),
+                                   NickName,
+                                   Encrypt(Money),
+                                   Encrypt(Lvl),
+                                   Encrypt(NextLvlExp),
+                                   Encrypt(Progress) };
+
+        string[] newFile = new string[objToSave.Length];
+        for (int i = 0; i < objToSave.Length; i++)
+            newFile[i] = objToSave[i];
+        File.WriteAllLines(path, newFile);
     }
     private async static void CreateFile()
     {
         using (StreamWriter stream = new StreamWriter(path, true))
-        {
-            await stream.WriteLineAsync(colorScheme.ToString());
-            await stream.WriteLineAsync(nickName);
-            await stream.WriteLineAsync(Encrypt(money));
-            await stream.WriteLineAsync(Encrypt(lvl));
-            await stream.WriteLineAsync(Encrypt(nextLvlExp));
-            await stream.WriteLineAsync(Encrypt(progress));
-        }
+            foreach (string obj in objToSave)
+                await stream.WriteLineAsync(obj);
     }
     private static string Encrypt(int num)
     {
@@ -156,7 +166,6 @@ public static class Settings
                 }
                 chars += (char)int.Parse(s[i].ToString());
             }            
-
         }
         if (!ch.Equals(""))
             chars += (char)int.Parse(ch);

@@ -6,12 +6,12 @@ public class ToggleBtnTextColor : MonoBehaviour
     public void ChangeColor(bool isInversed)
     {
 
-        Color32 darkColor = ColorManager.additionalColor1[Settings.colorScheme];
-        Color32 lightColor = ColorManager.textColor[Settings.colorScheme];
+        Color32 darkColor = ColorManager.additionalColor1[Settings.ColorScheme];
+        Color32 lightColor = ColorManager.textColor[Settings.ColorScheme];
         if (isInversed)
         {
-            darkColor = ColorManager.textColor[Settings.colorScheme];
-            lightColor = ColorManager.activeColor[Settings.colorScheme];
+            darkColor = ColorManager.textColor[Settings.ColorScheme];
+            lightColor = ColorManager.activeColor[Settings.ColorScheme];
         }
         if (GetComponent<Toggle>().isOn == true)
         {

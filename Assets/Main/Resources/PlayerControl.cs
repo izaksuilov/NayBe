@@ -8,7 +8,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
 {
     RawImage image;
     Image bg;
-    public int unAss;
+    public int unAss, money;
     private int width = -1, height = -1;
     public bool isPlayerTurn = false, isFieldClear = false, isReadyToStart = true;
     string imgBytes;
@@ -27,6 +27,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
                 //height = image.texture.height;
             }
             catch { image.texture = Resources.Load<Texture2D>("icons/Avatar1"); }
+            money = Settings.Money;
         }
         else
             image.texture = Resources.Load<Texture2D>("icons/Avatar1");
@@ -45,6 +46,7 @@ public class PlayerControl : MonoBehaviour, IPunObservable
         stream.Serialize(ref isReadyToStart);
         //stream.Serialize(ref imgBytes);
         stream.Serialize(ref unAss);
+        stream.Serialize(ref money);
     }
     private void Update()
     {
@@ -56,6 +58,8 @@ public class PlayerControl : MonoBehaviour, IPunObservable
         }
         catch{ }
         bg.color = isPlayerTurn ? new Color(0.329f, 0.878f, 0.22f) : Color.white;
+        money = Settings.Money;
+        transform.GetChild(3).GetChild(0).GetComponent<Text>().text = $"{money} р";
         //if (width != -1)
         //{
         //    Texture2D tex = new Texture2D(width, height, TextureFormat.RGB24, false);

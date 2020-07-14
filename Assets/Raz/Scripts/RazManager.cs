@@ -33,7 +33,8 @@ public class RazManager : MonoBehaviourPunCallbacks, IPunObservable
     }
     public void Leave()
     {
-        PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, null, new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+        if (GameObject.Find("My Hand").transform.childCount != 0)
+            PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, null, new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
         PhotonNetwork.LeaveRoom();
     }
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)

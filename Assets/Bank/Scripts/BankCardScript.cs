@@ -10,7 +10,7 @@ public class BankCardScript : MonoBehaviour
     {
         
     }
-    void Awake()
+    void Start()
     {
         transform.GetChild(0).GetChild(1).gameObject
             .SetActive(transform.parent.name.Equals("Ace Field") ||

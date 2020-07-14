@@ -72,11 +72,14 @@ public class BankController : MonoBehaviour
     }
     private void UpdateText(bool showBet = false, string text = "")
     {
+        if (text.Length > 0)
+        {
+            money.text = text;
+            return;
+        }
         lvl.text = $"Lvl {Settings.Lvl} ({Settings.Progress}/{Settings.NextLvlExp})";
         money.text = $"У вас {Settings.Money} рублей";
         if (showBet) money.text += $"\nСтавка: {bet} рублей";
-        if (text.Length > 0)
-            money.text = text;
     }
     IEnumerator RemoveCard()
     {

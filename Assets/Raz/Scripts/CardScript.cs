@@ -38,7 +38,7 @@ public class CardScript : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
         }
         catch { }
     }
-    void Awake()
+    void Start()
     {
         mainCamera = Camera.allCameras[0];
     }

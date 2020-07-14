@@ -18,9 +18,9 @@ public enum Events : byte
 public static class Settings
 {
     #region Переменные
-    static string path = Application.persistentDataPath + "/settings.dat",
+    private static string path = Application.persistentDataPath + "/settings.dat",
                   _nickName = "Игрок";
-    static int key = 228069, _colorScheme = 0, _money = 1000, _progress = 0, _lvl = 1;
+    private static int key = 228069, _colorScheme = 0, _money = 1000, _progress = 0, _lvl = 1;
     public static int ColorScheme 
     {
         get { return _colorScheme; }
@@ -51,8 +51,8 @@ public static class Settings
             catch (System.OverflowException)
             { _money = int.MaxValue; }
             _money -= _money % 10;
-            if (_money < 0)
-                _money = 0;
+            if (_money < 100)
+                _money = 100;
             SaveFile();
         }
     }
@@ -74,7 +74,7 @@ public static class Settings
         {
             try
             {
-                NextLvlExp = checked((int)Math.Pow(Lvl, 1.75) * 100);
+                NextLvlExp = checked((int)Math.Pow(Lvl, 1.5) * 100);
                 _progress = checked(value);
             }
             catch (System.OverflowException)
@@ -97,7 +97,7 @@ public static class Settings
             SaveFile();
         }
     }
-    static string[] objToSave = { ColorScheme.ToString(),
+    private static string[] objToSave = { ColorScheme.ToString(),
                                   NickName,
                                   Encrypt(Money),
                                   Encrypt(Lvl),

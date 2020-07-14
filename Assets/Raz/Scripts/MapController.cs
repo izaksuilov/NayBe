@@ -12,6 +12,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     [SerializeField] GameObject cardPrefab, field, positions, otherPlayer;
     static GameObject canvas;
     static PlayerControl myPlayer;
+    static bool isPlaying = false;
     public static List<PlayerControl> players { get; private set; }
     public static List<Card> allCards;
     public static int minCard { get; private set; } = 0;
@@ -27,23 +28,23 @@ public class MapController : MonoBehaviour, IOnEventCallback
         foreach (var player in players)
             if (!player.isFieldClear) goto skipEnablefield;
         PhotonNetwork.RaiseEvent((byte)Events.EnableField, null,
-            new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
-
-        skipEnablefield:
+           new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
+    skipEnablefield:
 
         if (players.Count != PhotonNetwork.CurrentRoom.MaxPlayers) return;
 
-        if (players.Count != PhotonNetwork.PlayerList.Length)
-            PhotonNetwork.RaiseEvent((byte)Events.PlayerLeftRoom, null, 
-                new RaiseEventOptions() { Receivers = ReceiverGroup.All }, new SendOptions() { Reliability = true });
-
+        if (players.Count != PhotonNetwork.PlayerList.Length && isPlaying)
+        {
+            Settings.Money += (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"];
+            SetLayoutActive(false);
+            isPlaying = false;
+            StartCoroutine(EndGame());
+        }
         foreach (var player in players)
             if (!player.isReadyToStart)
                 return;
 
         ArrangePlayers();
-        PhotonNetwork.RaiseEvent((byte)Events.ArrangePlayers, null, 
-            new RaiseEventOptions() { Receivers = ReceiverGroup.Others }, new SendOptions() { Reliability = true });
         if (players.Count == PhotonNetwork.CurrentRoom.MaxPlayers && PhotonNetwork.IsMasterClient)//если комната полная
         {
             int[] data = CreateRandomIds();
@@ -59,11 +60,10 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// </summary>
     private void StartFirstPhase(int[] idx)
     {
-        myPlayer.isReadyToStart = false;
-
+        isPlaying = true;
         //вычесть у всех деньги, чтобы, даже если игрок выйдет, у него снялись деньги
         Settings.Money -= (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"];
-
+        myPlayer.isReadyToStart = false;
         //создать нужное количество карт
         for (int i = 0; i < idx.Length; i++)
         {
@@ -127,6 +127,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
     /// </summary>
     private IEnumerator EndGame(string nickname = "")
     {
+        isPlaying = false;
         yield return new WaitForSeconds(0.004f);
         var cards = FindChildrenWithTag(canvas, "Card");
         foreach (GameObject card in cards)
@@ -297,6 +298,7 @@ public class MapController : MonoBehaviour, IOnEventCallback
             }
             case (byte)Events.PlayerLeftRoom:
             {
+                Settings.Money += (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"];
                 SetLayoutActive(false);
                 StartCoroutine(EndGame());
                 break;
@@ -310,10 +312,16 @@ public class MapController : MonoBehaviour, IOnEventCallback
                         players[i].isReadyToStart = false;
                         if (players[i].GetComponent<PhotonView>().IsMine)
                         {
-                            Settings.Money += (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"] + 
-                                              (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"] /
-                                               PhotonNetwork.CurrentRoom.MaxPlayers * (players.Count - 1);
-                            Debug.LogWarning("Money");
+                            int maxP = PhotonNetwork.CurrentRoom.MaxPlayers,
+                                bet = (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"];
+                            if (players.Count == maxP)
+                                Settings.Money += maxP % 2 != 0 ? bet / maxP * (maxP / 2 + 1) : bet / 2;
+                            else
+                            {
+                                bet -= bet / (maxP * (maxP / 2 + 1));
+                                Settings.Money += bet / (2 * (maxP - players.Count));
+                            }
+                            Settings.Progress += Settings.Step * players.Count / maxP;
                         }
                         players.RemoveAt(i);
                         break;
@@ -323,6 +331,9 @@ public class MapController : MonoBehaviour, IOnEventCallback
                     players[0].unAss++;
                     SetLayoutActive(false);
                     StartCoroutine(EndGame(players[0].GetComponent<PhotonView>().Owner.NickName));
+                    if (players[0].GetComponent<PhotonView>().IsMine &&
+                        Settings.Money < (int)PhotonNetwork.CurrentRoom.CustomProperties["C2"])
+                        PhotonNetwork.LeaveRoom();
                 }
                 break;
             }

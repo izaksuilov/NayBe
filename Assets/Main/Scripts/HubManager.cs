@@ -25,8 +25,11 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
     }
     void Awake()
 	{
-		CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Подключение...";
-		SearchWindowButton.interactable = CreateButton.interactable = false;
+		if (!PhotonNetwork.IsConnectedAndReady)
+		{
+			CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Подключение...";
+			SearchWindowButton.interactable = CreateButton.interactable = false;
+		}
 		Settings.Load();
 		sqlLobbyFilter = $"(C0 = \"Raz\" OR C0 = \"Durak\" OR C0 = \"NayBe\") AND (C1 = \"24\" OR C1 = \"36\" OR C1 = \"52\") AND (C2 >= 100 AND C2 <= {Settings.Money})";
 		GameObject.Find("Text Money").GetComponent<Text>().text = $"{Settings.Money} руб";
@@ -40,7 +43,8 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 		SelectWindow("Create");
 		SelectGame("Raz");
 	}
-    public override void OnConnectedToMaster()
+
+	public override void OnConnectedToMaster()
 	{
 		CreateButton.gameObject.transform.GetChild(0).GetComponent<Text>().text = "Создать комнату";
 		SearchWindowButton.interactable = CreateButton.interactable = true;
@@ -51,6 +55,7 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	/// </summary>
 	public void Create()
 	{
+		StopAllCoroutines();
 		string cards = "";
 		for (int i = 0; i < Cards.transform.childCount-1; i++)//получаем выбранное количество карт
 			if (Cards.transform.GetChild(i).GetComponent<Toggle>().isOn)
@@ -68,6 +73,17 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 								 roomOptions,
 								 new TypedLobby("myLobby", LobbyType.SqlLobby));
 	}
+	public override void OnCreateRoomFailed(short returnCode, string message)
+	{
+		string text = "";
+		switch (message)
+		{
+			case "A game with the specified id already exist.": 
+				text = "Комната с таким именем уже существует."; break;
+			default: text = message; break;
+		}
+		Notification.Show(text);
+    }
 	public override void OnJoinedRoom()
 	{
 		SceneManager.LoadScene(currentSelection);
@@ -170,7 +186,8 @@ public class HubManager : MonoBehaviourPunCallbacks, ILobbyCallbacks
 	/// </summary>
 	IEnumerator RefreshRoomList(int seconds)
 	{
-		PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
+		if (PhotonNetwork.IsConnectedAndReady)
+			PhotonNetwork.GetCustomRoomList(new TypedLobby("myLobby", LobbyType.SqlLobby), sqlLobbyFilter);
 		yield return new WaitForSeconds(seconds);
 		StartCoroutine(RefreshRoomList(seconds));
 	}
